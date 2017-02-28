@@ -1,0 +1,3 @@
+legControl	KEYWORD1
+angleToSensor	KEYWORD2
+sensorToAngle	KEYWORD2
