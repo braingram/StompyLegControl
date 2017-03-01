@@ -15,6 +15,9 @@ public:
 	legControl();
 	int angleToSensor(int joint, float angle);
 	float sensorToAngle(int joint, int sensorReading);
+	void anglesToXYZ(float anglesRad[], float xyz[]);
+	void anglesToRad(float angles[], float anglesRad[]);
+	void anglesRadToXYZ(float angles[], float xyz[]);
 };
 
 #endif
