@@ -17,11 +17,13 @@
  * this must be configured elsewhere.
  */
 #include <ADC.h>
+#include "sensors.h"
+#include "transforms.h"
 
 
 class StringPot {
   public:
-    StringPot(int pin, int adc_min, int adc_max, float length_min, float length_max, ADC* adc, int adc_number);
+    StringPot(AnalogSensor* sensor, LinearTransform* transform);
 
     // read and return
     int read_adc();
@@ -31,35 +33,15 @@ class StringPot {
     int get_adc_value();
     float get_length();
 
-    void set_adc_min(int adc_min);
-    int get_adc_min();
-
-    void set_adc_max(int adc_max);
-    int get_adc_max();
-
-    float get_length_min();
-    float get_length_max();
-
     float adc_value_to_length(int adc_value);
     int length_to_adc_value(float length);
 
+    AnalogSensor* sensor;
+    LinearTransform* transform;
 
   private:
-    ADC* _adc;
-    int _adc_number;
-    int _pin;
-
     int _adc_value;
-    int _adc_min;
-    int _adc_max;
-
     float _length;
-    float _length_min;
-    float _length_max;
-
-    float _length_to_adc_ratio;
-
-    void compute_length_to_adc_ratio();  // TODO make public?
 };
 
 #endif

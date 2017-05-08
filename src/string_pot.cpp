@@ -1,5 +1,7 @@
 #include "string_pot.h"
 
+StringPot::StringPot(AnalogSensor* sensor, LinearTransform* transform)
+
 StringPot::StringPot(int pin, int adc_min, int adc_max, float length_min, float length_max, ADC* adc, int adc_number) {
   _adc = adc;
   _adc_number = adc_number;

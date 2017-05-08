@@ -1,0 +1,88 @@
+/*
+	sensors.h - Library for reading sensors.
+	Created by Brett Graham, May 7, 2017.
+	Released into the public domain -- so help you God.
+*/
+
+
+#ifndef SENSORS_H
+#define SENSORS_H
+
+#include "Arduino.h"
+
+/*
+ * An ADC instance is used to read the analog sensors
+ * the class will not do anything to configure
+ * this ADC instance. So if you want HW averaging, etc
+ * this must be configured elsewhere.
+ */
+#include <ADC.h>
+#include "transforms.h"
+
+/* ========================================================
+ *                      Analog Sensor
+ * A class to handle reading a sensor value from an adc instance
+ * ========================================================*/
+class AnalogSensor {
+  public:
+    AnalogSensor(int pin, ADC* adc, int adc_number);
+
+    int read_adc();
+    
+    int get_adc_value();
+
+  protected:
+    int _adc_value;
+
+  private:
+    ADC* _adc;
+    int _adc_number;
+    int _pin;
+};
+
+
+/* ========================================================
+ *                     StringPot Sensor
+ * ========================================================*/
+c
+lass StringPot : public AnalogSensor {
+  public:
+    // TODO constructor with min/maxs
+    StringPot(int pin, ADC* adc, int adc_number, Transform* transform);
+
+    // read and return
+    float read_length();
+
+    // don't read, just return
+    float get_length();
+
+    float adc_value_to_length(int adc_value);
+    int length_to_adc_value(float length);
+
+  protected:
+    Transform* _transform;
+    float _length;
+};
+
+
+/* ========================================================
+ *                     PressureSensor
+ * ========================================================*/
+
+class PressureSensor : public AnalogSensor {
+  public:
+    // TODO constructor with min/maxs
+    PressureSensor(int pin, ADC* adc, int adc_number, Transform* transform);
+
+    float read_pressure();
+
+    float get_pressure();
+
+  protected:
+    Transform* _transform;
+    float _pressure;
+};
+
+// TODO joystick
+// TODO force sensor
+#endif
