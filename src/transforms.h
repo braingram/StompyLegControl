@@ -5,13 +5,20 @@
 */
 
 
-#ifndef STRING_POT_H
-#define STRING_POT_H
+#ifndef TRANSFORMS_H
+#define TRANSFORMS_H
 
 #include "Arduino.h"
 
 
-class LinearTransform {
+class Transform {
+  public:
+    virtual float src_to_dst(float src_value) = 0;
+    virtual float dst_to_src(float dst_value) = 0;
+};
+
+
+class LinearTransform : public Transform {
   public:
     LinearTransform(float min_src, float max_src, float min_dst, float max_dst);
 
@@ -40,3 +47,5 @@ class LinearTransform {
 
     void compute_src_to_dst_ratio();
 };
+
+#endif

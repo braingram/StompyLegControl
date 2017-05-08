@@ -14,7 +14,7 @@ AnalogSensor::AnalogSensor(int pin, ADC* adc, int adc_number) {
 }
 
 int AnalogSensor::read_adc() {
-  _adc_value = _adc->analogRead(_pin, adc_number);
+  _adc_value = _adc->analogRead(_pin, _adc_number);
   return _adc_value;
 }
 
@@ -28,7 +28,11 @@ int AnalogSensor::get_adc_value() {
  * ========================================================*/
 
 StringPot::StringPot(int pin, ADC* adc, int adc_number, Transform* transform) : AnalogSensor(pin, adc, adc_number) {
-  _transform = transform
+  _transform = transform;
+}
+
+StringPot::StringPot(int pin, ADC* adc, int adc_number, int adc_min, int adc_max, float length_min, float length_max) : AnalogSensor(pin, adc, adc_number) {
+  _transform = new LinearTransform(adc_min, adc_max, length_min, length_max);
 }
 
 float StringPot::read_length() {
@@ -55,7 +59,7 @@ int StringPot::length_to_adc_value(float length) {
  * ========================================================*/
 
 PressureSensor::PressureSensor(int pin, ADC* adc, int adc_number, Transform* transform) : AnalogSensor(pin, adc, adc_number) {
-  _transform = transform
+  _transform = transform;
 }
 
 float PressureSensor::read_pressure() {

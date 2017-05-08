@@ -23,6 +23,7 @@
  *                      Analog Sensor
  * A class to handle reading a sensor value from an adc instance
  * ========================================================*/
+
 class AnalogSensor {
   public:
     AnalogSensor(int pin, ADC* adc, int adc_number);
@@ -44,11 +45,11 @@ class AnalogSensor {
 /* ========================================================
  *                     StringPot Sensor
  * ========================================================*/
-c
-lass StringPot : public AnalogSensor {
+
+class StringPot : public AnalogSensor {
   public:
-    // TODO constructor with min/maxs
     StringPot(int pin, ADC* adc, int adc_number, Transform* transform);
+    StringPot(int pin, ADC* adc, int adc_number, int adc_min, int adc_max, float length_min, float length_max);
 
     // read and return
     float read_length();

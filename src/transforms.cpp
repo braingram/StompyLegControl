@@ -40,7 +40,7 @@ void LinearTransform::set_dst_max(float dst_max) {
   _dst_max = dst_max;
 }
 
-void LinearTransform::src_to_dst(float src_value) {
+float LinearTransform::src_to_dst(float src_value) {
   if (src_value <= _src_min) {
     return _dst_min;
   } else if (src_value >= _src_max) {
@@ -50,7 +50,7 @@ void LinearTransform::src_to_dst(float src_value) {
   }
 }
 
-void LinearTransform::dst_to_src(float dst_value) {
+float LinearTransform::dst_to_src(float dst_value) {
   if (dst_value <= _dst_min) {
     return _src_min;
   } else if (dst_value >= _dst_max) {

@@ -9,7 +9,7 @@
 
 #include "Arduino.h"
 #include "valve.h"
-#include "string_pot.h"
+#include "sensors.h"
 
 
 class Cylinder {
