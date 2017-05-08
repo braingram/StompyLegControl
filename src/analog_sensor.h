@@ -36,41 +36,4 @@ class AnalogSensor {
     int _pin;
 };
 
-/*
-class LinearAnalogSensor : public AnalogSensor {
-  public:
-    LinearAnalogSensor(int pin, ADC*adc, int adc_number, int adc_min, int adc_max, int process_min, int process_max);
-
-    float read_process();
-    float get_process();
-
-    void set_adc_min(int adc_min);
-    int get_adc_min();
-
-    void set_adc_max(int adc_max);
-    int get_adc_max();
-
-    void set_process_min(float process_min);
-    float get_process_min();
-
-    void set_process_max(float process_max);
-    float get_process_max();
-
-    float adc_value_to_process(int adc_value);
-    int process_to_adc_value(float process);
-
-  private:
-    int _adc_min;
-    int _adc_max;
-
-    float _process_value;
-    float _process_min;
-    float _process_max;
-
-    float _process_to_adc_ratio;
-
-    void compute_process_to_adc_ratio();  // TODO make public?
-
-};
-*/
 #endif
