@@ -16,21 +16,37 @@ void loop() {
         angles[0] = 0;
         angles[1] = 80;
         angles[2] = 100;
-        float anglesRad[3];
-        leg1.anglesToRad(angles, anglesRad);
-        leg1.anglesToXYZ(angles, xyz);
-        Serial.print("angles in:");
-        for (int i = 0; i < 3; i ++) {
+        //float anglesRad[3];
+        //leg1.angleToRad(angles, anglesRad);
+        // leg1.anglesToXYZ(angles, xyz);
+        // Serial.print("angles in:");
+        // for (int i = 0; i < 3; i ++) {
+        //         Serial.print("\t");
+        //         Serial.print(angles[i]);  
+        // }
+        // Serial.println();
+        // Serial.print("calculated xyz:");
+        // for (int i = 0; i < 3; i ++) {
+        //         Serial.print("\t");
+        //         Serial.print(xyz[i]);  
+        // } 
+        // Serial.println();
+
+        leg1.xyzToAngles(xyz, angles);
+        Serial.print("starting xyz:");
+        Serial.print("\t");
+        for (int i = 0; i < 3; i++) {
+                Serial.print(xyz[i]);
                 Serial.print("\t");
-                Serial.print(angles[i]);  
         }
-        Serial.println();
-        Serial.print("calculated xyz:");
-        for (int i = 0; i < 3; i ++) {
+        Serial.println("calculated angles:");
+        Serial.print("\t");
+        for (int i = 0; i < 3; i++) {
+                Serial.print(angles[i]);
                 Serial.print("\t");
-                Serial.print(xyz[i]);  
-        } 
-        Serial.println();
+        }
+        
+
 
         // for (int joint = 0; joint < 3; joint ++) {
         //         for (int sensorReading = 100; sensorReading <= 800; sensorReading = sensorReading + 10) {
