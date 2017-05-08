@@ -16,8 +16,12 @@ public:
 	int angleToSensor(int joint, float angle);
 	float sensorToAngle(int joint, int sensorReading);
 	void anglesToXYZ(float anglesRad[], float xyz[]);
-	void anglesToRad(float angles[], float anglesRad[]);
+	float angleToRad(float angle);
 	void anglesRadToXYZ(float angles[], float xyz[]);
+	void xyzToAngles(float xyz[], float angles[]);
+	//void xyzToSensors(float xyz[], int sensorGoals[]);
+	void xyzToSensors(float xyz[], int sensorGoals[]);
+	void goal_XYZ_toSensorVelocities(float startXYZ[], float finalXYZ[], float sensorVelocities[], float time);
 };
 
 #endif
