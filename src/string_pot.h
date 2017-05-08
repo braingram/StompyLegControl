@@ -21,7 +21,7 @@
 
 class StringPot {
   public:
-    StringPot(ADC* adc, int pin, int adc_min, int adc_max, float length_min, float length_max);
+    StringPot(int pin, int adc_min, int adc_max, float length_min, float length_max, ADC* adc, int adc_number);
 
     // read and return
     int read_adc();
@@ -46,6 +46,7 @@ class StringPot {
 
   private:
     ADC* _adc;
+    int _adc_number;
     int _pin;
 
     int _adc_value;

@@ -1,7 +1,8 @@
 #include "string_pot.h"
 
-StringPot::StringPot(ADC* adc, int pin, int adc_min, int adc_max, float length_min, float length_max) {
+StringPot::StringPot(int pin, int adc_min, int adc_max, float length_min, float length_max, ADC* adc, int adc_number) {
   _adc = adc;
+  _adc_number = adc_number;
   _pin = pin;
   _adc_min = adc_min;
   _adc_max = adc_max;
@@ -21,7 +22,7 @@ void StringPot::compute_length_to_adc_ratio() {
 }
 
 int StringPot::read_adc() {
-  _adc_value = _adc->analogRead(_pin);
+  _adc_value = _adc->analogRead(_pin, adc_number);
   _length = adc_value_to_length(_adc_value);
   return _adc_value;
 }
@@ -79,6 +80,6 @@ int StringPot::length_to_adc_value(float length) {
   } else if (length >= _length_max) {
     return _adc_max;
   } else {
-    return (_length - _length_min) / _length_to_adc_ratio + _adc_min;
+    return (length - _length_min) / _length_to_adc_ratio + _adc_min;
   }
 }
