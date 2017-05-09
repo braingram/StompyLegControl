@@ -86,7 +86,7 @@ class PressureSensor : public AnalogSensor {
 
 
 /* ========================================================
- *                     PressureSensor
+ *                     JoystickAxis
  * ========================================================*/
 
 class JoystickAxis : public AnalogSensor {
@@ -101,5 +101,7 @@ class JoystickAxis : public AnalogSensor {
     Transform* _transform;
     float _axis;
 };
+
+
 // TODO force sensor
 #endif

@@ -52,12 +52,16 @@ class LinearTransform : public Transform {
 class LinearDeadbandTransform : public Transform {
   public:
     LinearDeadbandTransform(float src_min, float src_deadband_min, float src_deadband_max, float src_max, float dst_min, float dst_mid, float dst_max);
+    LinearDeadbandTransform(float src_min, float src_deadband_min, float src_mid, float src_deadband_max, float src_max, float dst_min, float dst_mid, float dst_max);
 
     float get_src_min();
     void set_src_min(float src_min);
 
     float get_src_deadband_min();
     void set_src_deadband_min(float src_deadband_min);
+
+    float get_src_mid();
+    void set_src_mid(float src_mid);
 
     float get_src_max();
     void set_src_max(float src_max);
@@ -80,6 +84,7 @@ class LinearDeadbandTransform : public Transform {
   private:
     float _src_min;
     float _src_deadband_min;
+    float _src_mid;
     float _src_deadband_max;
     float _src_max;
 

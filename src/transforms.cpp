@@ -78,9 +78,10 @@ void LinearTransform::compute_slope() {
  *                LinearDeadbandTransform
  * ========================================================*/
 
-LinearDeadbandTransform::LinearDeadbandTransform(float src_min, float src_deadband_min, float src_deadband_max, float src_max, float dst_min, float dst_mid, float dst_max) {
+LinearDeadbandTransform::LinearDeadbandTransform(float src_min, float src_deadband_min, float src_mid, float src_deadband_max, float src_max, float dst_min, float dst_mid, float dst_max) {
   _src_min = src_min;
   _src_deadband_min = src_deadband_min;
+  _src_mid = src_mid;
   _src_deadband_max = src_deadband_max;
   _src_max = src_max;
   _dst_min = dst_min;
@@ -89,6 +90,9 @@ LinearDeadbandTransform::LinearDeadbandTransform(float src_min, float src_deadba
   compute_slopes();
 }
 
+LinearDeadbandTransform::LinearDeadbandTransform(float src_min, float src_deadband_min, float src_deadband_max, float src_max, float dst_min, float dst_mid, float dst_max) : LinearDeadbandTransform(src_min, src_deadband_min, (src_deadband_max + src_deadband_min) / 2., src_deadband_max, src_max, dst_min, dst_mid, dst_max) {
+};
+ 
 float LinearDeadbandTransform::get_src_min() {
   return _src_min;
 }
@@ -107,13 +111,13 @@ void LinearDeadbandTransform::set_src_deadband_min(float src_deadband_min) {
   compute_slopes();
 }
 
-float LinearDeadbandTransform::get_src_max() {
-  return _src_max;
+float LinearDeadbandTransform::get_src_mid() {
+  return _src_mid;
 }
 
-void LinearDeadbandTransform::set_src_max(float src_max) {
-  _src_max = src_max;
-  compute_slopes();
+void LinearDeadbandTransform::set_src_mid(float src_mid) {
+  _src_mid = src_mid;
+  // compute_slopes();
 }
 
 float LinearDeadbandTransform::get_src_deadband_max() {
@@ -122,6 +126,15 @@ float LinearDeadbandTransform::get_src_deadband_max() {
 
 void LinearDeadbandTransform::set_src_deadband_max(float src_deadband_max) {
   _src_deadband_max = src_deadband_max;
+  compute_slopes();
+}
+
+float LinearDeadbandTransform::get_src_max() {
+  return _src_max;
+}
+
+void LinearDeadbandTransform::set_src_max(float src_max) {
+  _src_max = src_max;
   compute_slopes();
 }
 
@@ -176,8 +189,8 @@ float LinearDeadbandTransform::dst_to_src(float dst_value) {
     return _src_min;
   } else if (dst_value >= _dst_max) {
     return _src_max;
-  } else if (dst_value == _dst_mid) {  // TODO this isn't defined
-    return (_src_deadband_min + _src_deadband_max) / 2.;
+  } else if (dst_value == _dst_mid) {
+    return _src_mid;
   } else if (dst_value < _dst_mid) {  // below deadband
     return (dst_value - _dst_min) / _min_slope + _src_min;
   } else {  // above deadband
