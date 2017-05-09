@@ -170,3 +170,17 @@ float LinearDeadbandTransform::src_to_dst(float src_value) {
     return _dst_mid;
   }
 }
+
+float LinearDeadbandTransform::dst_to_src(float dst_value) {
+  if (dst_value <= _dst_min) {
+    return _src_min;
+  } else if (dst_value >= _dst_max) {
+    return _src_max;
+  } else if (dst_value == _dst_mid) {  // TODO this isn't defined
+    return (_src_deadband_min + _src_deadband_max) / 2.;
+  } else if (dst_value < _dst_mid) {  // below deadband
+    return (dst_value - _dst_min) / _min_slope + _src_min;
+  } else {  // above deadband
+    return (dst_value - _dst_mid) / _max_slope + _src_deadband_max;
+  }
+}

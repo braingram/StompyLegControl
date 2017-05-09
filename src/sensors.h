@@ -72,8 +72,8 @@ class StringPot : public AnalogSensor {
 
 class PressureSensor : public AnalogSensor {
   public:
-    // TODO constructor with min/maxs
     PressureSensor(int pin, ADC* adc, int adc_number, Transform* transform);
+    PressureSensor(int pin, ADC* adc, int adc_number, int adc_min, int adc_max, float pressure_min, float pressure_max);
 
     float read_pressure();
 
@@ -84,6 +84,22 @@ class PressureSensor : public AnalogSensor {
     float _pressure;
 };
 
-// TODO joystick
+
+/* ========================================================
+ *                     PressureSensor
+ * ========================================================*/
+
+class JoystickAxis : public AnalogSensor {
+  public:
+    JoystickAxis(int pin, ADC* adc, int adc_number, Transform* transform);
+    JoystickAxis(int pin, ADC* adc, int adc_number, int adc_min, int adc_deadband_min, int adc_deadband_max, int adc_max, float axis_min, float axis_mid, float axis_max);
+
+    float read_axis();
+
+    float get_axis();
+  protected:
+    Transform* _transform;
+    float _axis;
+};
 // TODO force sensor
 #endif

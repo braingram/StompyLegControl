@@ -75,8 +75,8 @@ class LinearDeadbandTransform : public Transform {
     void set_dst_max(float dst_max);
 
     float src_to_dst(float src_value);
-    //float dst_to_src(float dst_value);  // TODO ever useful?
-    //
+    float dst_to_src(float dst_value);
+
   private:
     float _src_min;
     float _src_deadband_min;
