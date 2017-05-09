@@ -20,7 +20,7 @@ class Transform {
 
 class LinearTransform : public Transform {
   public:
-    LinearTransform(float min_src, float max_src, float min_dst, float max_dst);
+    LinearTransform(float src_min, float src_max, float dst_min, float dst_max);
 
     float get_src_min();
     void set_src_min(float src_min);
@@ -43,9 +43,54 @@ class LinearTransform : public Transform {
     float _dst_min;
     float _dst_max;
 
-    float _src_to_dst_ratio;
+    float _slope;
 
-    void compute_src_to_dst_ratio();
+    void compute_slope();
+};
+
+
+class LinearDeadbandTransform : public Transform {
+  public:
+    LinearDeadbandTransform(float src_min, float src_deadband_min, float src_deadband_max, float src_max, float dst_min, float dst_mid, float dst_max);
+
+    float get_src_min();
+    void set_src_min(float src_min);
+
+    float get_src_deadband_min();
+    void set_src_deadband_min(float src_deadband_min);
+
+    float get_src_max();
+    void set_src_max(float src_max);
+
+    float get_src_deadband_max();
+    void set_src_deadband_max(float src_deadband_max);
+
+    float get_dst_min();
+    void set_dst_min(float dst_min);
+
+    float get_dst_mid();
+    void set_dst_mid(float dst_mid);
+
+    float get_dst_max();
+    void set_dst_max(float dst_max);
+
+    float src_to_dst(float src_value);
+    //float dst_to_src(float dst_value);  // TODO ever useful?
+    //
+  private:
+    float _src_min;
+    float _src_deadband_min;
+    float _src_deadband_max;
+    float _src_max;
+
+    float _dst_min;
+    float _dst_mid;
+    float _dst_max;
+
+    float _min_slope;
+    float _max_slope;
+
+    void compute_slopes();
 };
 
 #endif
