@@ -98,4 +98,27 @@ class LinearDeadbandTransform : public Transform {
     void compute_slopes();
 };
 
+
+class InterpolatedTransform : public Transform {
+  public:
+    InterpolatedTransform(float src_min, float src_max, float* dst_pts, int n_dst_pts);
+
+    float get_src_min();
+    void set_src_min(float src_min);
+
+    float get_src_max();
+    void set_src_max(float src_max);
+
+    void set_dst_pts(float* dst_pts, int n_dst_pts);
+
+    float src_to_dst(float src_value);
+    float dst_to_src(float dst_value);
+
+  private:
+    float _src_min;
+    float _src_max;
+    float* _dst_pts;
+    int _n_dst_pts;
+};
+
 #endif
