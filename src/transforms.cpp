@@ -246,9 +246,10 @@ float InterpolatedTransform::src_to_dst(float src_value) {
 }
 
 float InterpolatedTransform::dst_to_src(float dst_value) {
+  // only really works if function is 1-to-1
   if (dst_value <= _dst_pts[0]) return _src_min;
   if (dst_value >= _dst_pts[_n_dst_pts - 1]) return _src_max;
-  int i=0;
+  int i;
   for (i=0; i<_n_dst_pts; i++) {
     if (_dst_pts[i] > dst_value) {
       break;
