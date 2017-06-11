@@ -121,4 +121,22 @@ class InterpolatedTransform : public Transform {
     int _n_dst_pts;
 };
 
+
+class JointAngleTransform {
+  public:
+    JointAngleTransform(float a, float b, float zero);
+
+    float src_to_dst(float src_value);
+    float length_to_angle(float length);
+
+    float dst_to_src(float dst_value);
+    float angle_to_length(float angle);
+
+
+  private:
+    float _zero;
+    float _ab2;
+    float _2ab;
+};
+
 #endif

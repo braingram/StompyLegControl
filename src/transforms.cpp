@@ -268,3 +268,34 @@ float InterpolatedTransform::dst_to_src(float dst_value) {
         / (_n_dst_pts - 1.0))
       ) * (_src_max - _src_min) + _src_min;
 }
+
+
+/* ========================================================
+ *                 JointAngleTransform
+ * ========================================================*/
+
+JointAngleTransform::JointAngleTransform(float a, float b, float zero) {
+  _ab2 = a * a + b * b;
+  _2ab = 2 * a * b;
+  _zero = zero;
+}
+
+float JointAngleTransform::src_to_dst(float src_value) {
+  // length to angle
+  // cos(C) = (a * a + b * b - c * c) / (2 * a * b)
+  return acos((_ab2 - (src_value * src_value)) / _2ab) - _zero;
+}
+
+float JointAngleTransform::length_to_angle(float length) {
+  return src_to_dst(length);
+}
+
+float JointAngleTransform::dst_to_src(float dst_value) {
+  // angle to length
+  // c * c = a * a + b * b - (2 * a * b) * cos(C)
+  return sqrt(_ab2 - _2ab * cos(dst_value + _zero));
+}
+
+float JointAngleTransform::angle_to_length(float angle) {
+  return dst_to_src(angle);
+}

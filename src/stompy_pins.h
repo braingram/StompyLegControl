@@ -24,8 +24,8 @@
 #define PRESSURE_SENSOR_MANIFOLD A13
 #endif
 
-#define KNEE_SENSOR_PIN		17
-#define THIGH_SENSOR_PIN	15  // TODO these were swapped, verify
+#define KNEE_SENSOR_PIN		15
+#define THIGH_SENSOR_PIN	17
 #define HIP_SENSOR_PIN		20
 #define COMPLIANT_SENSOR_PIN	16
 
