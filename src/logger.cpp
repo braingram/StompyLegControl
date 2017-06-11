@@ -7,6 +7,7 @@ Logger::Logger() {
 
 void Logger::log(String msg, byte level) {
   if (*_writer == NULL) return;
+  if (level < _level) return;
   _writer(msg);
 };
 

@@ -22,7 +22,7 @@ void loop() {
     logger.set_level(levels[i]);
     Serial.print("Set level: "); Serial.println(levels[i]);
     for (int j=0; j<N_LEVELS; j++) {
-      logger.log(String(j), j);
+      logger.log(String(levels[j]), levels[j]);
     }
     delay(1000);
   }
