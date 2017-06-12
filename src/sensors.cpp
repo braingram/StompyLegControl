@@ -13,12 +13,12 @@ AnalogSensor::AnalogSensor(int pin, ADC* adc, int adc_number) {
   read_adc();
 }
 
-int AnalogSensor::read_adc() {
+unsigned int AnalogSensor::read_adc() {
   _adc_value = _adc->analogRead(_pin, _adc_number);
   return _adc_value;
 }
 
-int AnalogSensor::get_adc_value() {
+unsigned int AnalogSensor::get_adc_value() {
   return _adc_value;
 }
 
@@ -31,7 +31,7 @@ StringPot::StringPot(int pin, ADC* adc, int adc_number, Transform* transform) : 
   _transform = transform;
 }
 
-StringPot::StringPot(int pin, ADC* adc, int adc_number, int adc_min, int adc_max, float length_min, float length_max) : AnalogSensor(pin, adc, adc_number) {
+StringPot::StringPot(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_max, float length_min, float length_max) : AnalogSensor(pin, adc, adc_number) {
   _transform = new LinearTransform(adc_min, adc_max, length_min, length_max);
 }
 
@@ -45,12 +45,12 @@ float StringPot::get_length() {
   return _length;
 }
 
-float StringPot::adc_value_to_length(int adc_value) {
+float StringPot::adc_value_to_length(unsigned int adc_value) {
   return _transform->src_to_dst(adc_value);
 }
 
-int StringPot::length_to_adc_value(float length) {
-  return (int)(_transform->dst_to_src(length));
+unsigned int StringPot::length_to_adc_value(float length) {
+  return (unsigned int)(_transform->dst_to_src(length));
 }
 
 
@@ -62,7 +62,7 @@ PressureSensor::PressureSensor(int pin, ADC* adc, int adc_number, Transform* tra
   _transform = transform;
 }
 
-PressureSensor::PressureSensor(int pin, ADC* adc, int adc_number, int adc_min, int adc_max, float pressure_min, float pressure_max) : AnalogSensor(pin, adc, adc_number) {
+PressureSensor::PressureSensor(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_max, float pressure_min, float pressure_max) : AnalogSensor(pin, adc, adc_number) {
   _transform = new LinearTransform(adc_min, adc_max, pressure_min, pressure_max);
 }
 
@@ -86,7 +86,7 @@ JoystickAxis::JoystickAxis(int pin, ADC* adc, int adc_number, Transform* transfo
 }
 
 
-JoystickAxis::JoystickAxis(int pin, ADC* adc, int adc_number, int adc_min, int adc_deadband_min, int adc_deadband_max, int adc_max, float axis_min, float axis_mid, float axis_max) : AnalogSensor(pin, adc, adc_number) {
+JoystickAxis::JoystickAxis(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_deadband_min, unsigned int adc_deadband_max, unsigned int adc_max, float axis_min, float axis_mid, float axis_max) : AnalogSensor(pin, adc, adc_number) {
   _transform = new LinearDeadbandTransform(adc_min, adc_deadband_min, adc_deadband_max, adc_max, axis_min, axis_mid, axis_max);
 }
 

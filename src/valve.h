@@ -28,15 +28,18 @@ class Valve {
     void disable();
 
     // allow setting of pwm
+    void set_pwm(int pwm);
     void extend_pwm(int pwm);
     void retract_pwm(int pwm);
     void stop();
 
     // and setting by ratio (value from 0 to 1)
+    void set_ratio(float ratio);
     void extend_ratio(float ratio);
     void retract_ratio(float ratio);
 
     // allow getting of state
+    bool get_enabled();
     int get_pwm();
     int get_direction();
 
@@ -44,6 +47,7 @@ class Valve {
     // state
     int _pwm;
     int _direction;
+    bool _enabled;
 
     // pins
     int _extendPin;

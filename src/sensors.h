@@ -28,12 +28,12 @@ class AnalogSensor {
   public:
     AnalogSensor(int pin, ADC* adc, int adc_number);
 
-    int read_adc();
+    unsigned int read_adc();
     
-    int get_adc_value();
+    unsigned int get_adc_value();
 
   protected:
-    int _adc_value;
+    unsigned int _adc_value;
 
   private:
     ADC* _adc;
@@ -49,7 +49,7 @@ class AnalogSensor {
 class StringPot : public AnalogSensor {
   public:
     StringPot(int pin, ADC* adc, int adc_number, Transform* transform);
-    StringPot(int pin, ADC* adc, int adc_number, int adc_min, int adc_max, float length_min, float length_max);
+    StringPot(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_max, float length_min, float length_max);
 
     // read and return
     float read_length();
@@ -57,8 +57,8 @@ class StringPot : public AnalogSensor {
     // don't read, just return
     float get_length();
 
-    float adc_value_to_length(int adc_value);
-    int length_to_adc_value(float length);
+    float adc_value_to_length(unsigned int adc_value);
+    unsigned int length_to_adc_value(float length);
 
   protected:
     Transform* _transform;
@@ -73,7 +73,7 @@ class StringPot : public AnalogSensor {
 class PressureSensor : public AnalogSensor {
   public:
     PressureSensor(int pin, ADC* adc, int adc_number, Transform* transform);
-    PressureSensor(int pin, ADC* adc, int adc_number, int adc_min, int adc_max, float pressure_min, float pressure_max);
+    PressureSensor(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_max, float pressure_min, float pressure_max);
 
     float read_pressure();
 
@@ -92,7 +92,7 @@ class PressureSensor : public AnalogSensor {
 class JoystickAxis : public AnalogSensor {
   public:
     JoystickAxis(int pin, ADC* adc, int adc_number, Transform* transform);
-    JoystickAxis(int pin, ADC* adc, int adc_number, int adc_min, int adc_deadband_min, int adc_deadband_max, int adc_max, float axis_min, float axis_mid, float axis_max);
+    JoystickAxis(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_deadband_min, unsigned int adc_deadband_max, unsigned int adc_max, float axis_min, float axis_mid, float axis_max);
 
     float read_axis();
 
