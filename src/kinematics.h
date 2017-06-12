@@ -36,6 +36,8 @@
 #ifndef KINEMATICS_H
 #define KINEMATICS_H
 
+#include "Arduino.h"
+
 #include "point.h"
 
 

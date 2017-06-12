@@ -10,24 +10,24 @@
 #define ENABLE_PIN		1	/* Knee and thigh */
 #define ENABLE_PIN_HIP		2
 #else
-#define JOYSTICK_X_PIN		31
-#define JOYSTICK_Y_PIN		30
-#define JOYSTICK_Z_PIN		29
+#define JOYSTICK_X_PIN		31  // ADC1
+#define JOYSTICK_Y_PIN		30  // ADC1
+#define JOYSTICK_Z_PIN		29  // ADC1
 #define DEADMAN_PIN		25
 #define ENABLE_PIN		8	/* Knee and thigh */
 #define ENABLE_PIN_HIP		2
 
-#define PRESSURE_SENSOR_1	A17
-#define PRESSURE_SENSOR_2	A16
-#define PRESSURE_SENSOR_3	A15
-#define PRESSURE_SENSOR_4	A12
-#define PRESSURE_SENSOR_MANIFOLD A13
+#define PRESSURE_SENSOR_1	A17  // ADC1
+#define PRESSURE_SENSOR_2	A16  // ADC1
+#define PRESSURE_SENSOR_3	A15  // ADC1
+#define PRESSURE_SENSOR_4	A12  // ADC0/ADC1
+#define PRESSURE_SENSOR_MANIFOLD A13  // ADC0/ADC1
 #endif
 
-#define KNEE_SENSOR_PIN		15
-#define THIGH_SENSOR_PIN	17
-#define HIP_SENSOR_PIN		20
-#define COMPLIANT_SENSOR_PIN	16
+#define KNEE_SENSOR_PIN		15  // ADC0
+#define THIGH_SENSOR_PIN	17  // ADC0/1
+#define HIP_SENSOR_PIN		20  // ADC0
+#define COMPLIANT_SENSOR_PIN	16  // ADC0/1
 
 //These are mapped to the right front leg
 #define THIGHPWM_DOWN_PIN	3

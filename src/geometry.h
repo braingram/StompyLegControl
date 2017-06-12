@@ -32,8 +32,10 @@
 
 // ----- 'zero' angles in radians -----
 // hip 0 is with cylinder at half travel
-#define HIP_ZERO_ANGLE 1.5173462055263942
-#define HIP_ZERO_ANGLE_MIDDLE 1.4522610715150865
+// when front/rear hip cylinder is at 19.80315 hip is at zero
+#define HIP_ZERO_ANGLE 1.4228032681870073
+// when middle hip cylinder is at 20.314961 hip is at zero
+#define HIP_ZERO_ANGLE_MIDDLE 1.4997925172727815
 // thigh 0 is with cylinder fully retracted
 #define THIGH_ZERO_ANGLE 0.33189216561617446
 // knee 0 is with cylinder fully extended
@@ -52,6 +54,6 @@
 #define THIGH_LENGTH 54.0
 #define KNEE_LENGTH 72.0 
 
-#define PI 3.141592653589793
+//#define PI 3.141592653589793
 
 #endif
