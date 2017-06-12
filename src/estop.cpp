@@ -16,7 +16,7 @@ byte EStop::get_estop() {
   return _estop;
 };
 
-bool EStop::check_estop() {
+bool EStop::is_stopped() {
   return get_estop() != ESTOP_OFF;
 };
 

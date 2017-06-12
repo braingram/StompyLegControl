@@ -40,10 +40,13 @@
 // pwms mapped to the valve/cylinder positions
 #define HIP_EXTEND_PIN	9
 #define HIP_RETRACT_PIN	10
+#define HIP_ENABLE_PIN 2
 #define THIGH_EXTEND_PIN	3
 #define THIGH_RETRACT_PIN 4
+#define THIGH_ENABLE_PIN 8
 #define KNEE_EXTEND_PIN 5
 #define KNEE_RETRACT_PIN 6
+#define KNEE_ENABLE_PIN 8
 
 #define M1FB_PIN		21
 #define M2FB_PIN		22

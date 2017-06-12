@@ -35,11 +35,12 @@
 
 class EStop {
   public:
+    // TODO give this access to enable pins?
     EStop();
 
     byte set_estop(byte severity);
     byte get_estop();
-    bool check_estop();
+    bool is_stopped();
 
     void set_heartbeat();
   private:
