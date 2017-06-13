@@ -275,8 +275,35 @@ float InterpolatedTransform::dst_to_src(float dst_value) {
  * ========================================================*/
 
 JointAngleTransform::JointAngleTransform(float a, float b, float zero) {
-  _ab2 = a * a + b * b;
-  _2ab = 2 * a * b;
+  _a = a;
+  _b = b;
+  _zero = zero;
+  _compute_ab();
+}
+
+float JointAngleTransform::get_a() {
+  return _a;
+}
+
+float JointAngleTransform::get_b() {
+  return _b;
+}
+
+float JointAngleTransform::get_zero() {
+  return _zero;
+}
+
+void JointAngleTransform::set_a(float a) {
+  _a = a;
+  _compute_ab();
+}
+
+void JointAngleTransform::set_b(float b) {
+  _b = b;
+  _compute_ab();
+}
+
+void JointAngleTransform::set_zero(float zero) {
   _zero = zero;
 }
 
@@ -298,4 +325,9 @@ float JointAngleTransform::dst_to_src(float dst_value) {
 
 float JointAngleTransform::angle_to_length(float angle) {
   return dst_to_src(angle);
+}
+
+void JointAngleTransform::_compute_ab() {
+  _ab2 = _a * _a + _b * _b;
+  _2ab = 2 * _a * _b;
 }

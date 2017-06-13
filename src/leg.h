@@ -49,32 +49,47 @@
  * - update all joints
  */
 
+
+enum class LEG_NUMBER : uint8_t {
+  FR,
+  MR,
+  RR,
+  RL,
+  ML,
+  FL,
+  UNDEFINED,
+};
+
+
 class Leg {
   public:
     Leg();
-    void set_leg_info(byte side, byte order);
+    void set_leg_number(LEG_NUMBER leg);
     void update();
 
-  private:
-    // TODO make some of these public?
-    EStop* _estop;
-    ADC* _adc;
-    StringPot* _hip_pot;
-    StringPot* _thigh_pot;
-    StringPot* _knee_pot;
-    Valve* _hip_valve;
-    Valve* _thigh_valve;
-    Valve* _knee_valve;
-    Joint* _hip_joint;
-    Joint* _thigh_joint;
-    Joint* _knee_joint;
-    JointAngleTransform* _hip_angle_transform;
-    JointAngleTransform* _thigh_angle_transform;
-    JointAngleTransform* _knee_angle_transform;
-    Kinematics* _kinematics;
+    LEG_NUMBER leg_number;
+    EStop* estop;
+    ADC* adc;
+    StringPot* hip_pot;
+    StringPot* thigh_pot;
+    StringPot* knee_pot;
+    Valve* hip_valve;
+    Valve* thigh_valve;
+    Valve* knee_valve;
+    Joint* hip_joint;
+    Joint* thigh_joint;
+    Joint* knee_joint;
+    JointAngleTransform* hip_angle_transform;
+    JointAngleTransform* thigh_angle_transform;
+    JointAngleTransform* knee_angle_transform;
+    Kinematics* kinematics;
 
     Angle3D joint_angles;
     Point3D foot_position;
+
+  private:
+    // TODO make some of these public?
+    bool _defined;
 };
 
 #endif

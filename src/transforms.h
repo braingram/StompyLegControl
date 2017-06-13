@@ -126,6 +126,14 @@ class JointAngleTransform {
   public:
     JointAngleTransform(float a, float b, float zero);
 
+    float get_a();
+    float get_b();
+    float get_zero();
+
+    void set_a(float a);
+    void set_b(float b);
+    void set_zero(float zero);
+
     float src_to_dst(float src_value);
     float length_to_angle(float length);
 
@@ -134,7 +142,10 @@ class JointAngleTransform {
 
 
   private:
+    void _compute_ab();
     float _zero;
+    float _a;
+    float _b;
     float _ab2;
     float _2ab;
 };

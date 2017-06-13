@@ -39,19 +39,25 @@ bool Kinematics::xyz_to_angles(float x, float y, float z, float* hip, float* thi
   float L = sqrt(z * z + (l - HIP_LENGTH) * (l - HIP_LENGTH));
 
   float a1 = acos(-z / L);
+  //float a2 = acos(
+  //    (KNEE_LENGTH * KNEE_LENGTH - THIGH_LENGTH * THIGH_LENGTH - L * L) /
+  //    (-2 * THIGH_LENGTH * L));
   float a2 = acos(
-      (KNEE_LENGTH * KNEE_LENGTH - THIGH_LENGTH * THIGH_LENGTH - L * L) /
+      (KNEE_LENGTH_SQUARED - THIGH_LENGTH_SQUARED - L * L) /
       (-2 * THIGH_LENGTH * L));
 
   float alpha = (a1 + a2);
 
+  //float beta = acos(
+  //    (L * L - KNEE_LENGTH_SQUARED - THIGH_LENGTH_SQUARED) /
+  //    (-2 * KNEE_LENGTH * THIGH_LENGTH));
   float beta = acos(
-      (L * L - KNEE_LENGTH * KNEE_LENGTH - THIGH_LENGTH * THIGH_LENGTH) /
-      (-2 * KNEE_LENGTH * THIGH_LENGTH));
+      (L * L - KNEE_LENGTH_SQUARED - THIGH_LENGTH_SQUARED) /
+      (KNEE_THIGH_MIN_2));
 
   *thigh = THIGH_REST_ANGLE - (alpha - PI / 2.);
-  float base_beta = PI - THIGH_REST_ANGLE + KNEE_REST_ANGLE;
-  *knee = base_beta - beta;
+  //float base_beta = PI - THIGH_REST_ANGLE + KNEE_REST_ANGLE;
+  *knee = BASE_BETA - beta;
   // TODO check ranges, return false if out-of-bounds
   return true;
 };
