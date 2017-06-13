@@ -7,7 +7,7 @@
 #ifndef JOINT_H
 #define JOINT_H
 
-#include <PID_v1.h>
+#include "pid.h"
 #include "Arduino.h"
 #include "valve.h"
 #include "sensors.h"
@@ -16,7 +16,7 @@
 
 class Joint {
   public:
-    Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform);
+    Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform, PID* pid);
 
     bool set_target_angle(float angle);
     bool set_target_length(float length);

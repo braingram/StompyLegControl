@@ -13,6 +13,7 @@
 class PID {
   public:
     PID(float p, float i, float d);
+    PID(float p, float i, float d, float min_output, float max_output);
 
     void set_output_limits(float min_output, float max_output);
 

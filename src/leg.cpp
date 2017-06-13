@@ -42,6 +42,11 @@ Leg::Leg() {
     KNEE_A, KNEE_B, KNEE_ZERO_ANGLE);
 
 
+  hip_pid = new PID(HIP_P, HIP_I, HIP_D, HIP_PID_MIN, HIP_PID_MAX);
+  thigh_pid = new PID(THIGH_P, THIGH_I, THIGH_D, THIGH_PID_MIN, THIGH_PID_MAX);
+  knee_pid = new PID(KNEE_P, KNEE_I, KNEE_D, KNEE_PID_MIN, KNEE_PID_MAX);
+
+
   hip_valve = new Valve(
       HIP_EXTEND_PIN, HIP_RETRACT_PIN, HIP_ENABLE_PIN);
   thigh_valve = new Valve(
@@ -50,9 +55,12 @@ Leg::Leg() {
       KNEE_EXTEND_PIN, KNEE_RETRACT_PIN, KNEE_ENABLE_PIN);
 
 
-  hip_joint = new Joint(hip_valve, hip_pot, hip_angle_transform);
-  thigh_joint = new Joint(thigh_valve, thigh_pot, thigh_angle_transform);
-  knee_joint = new Joint(knee_valve, knee_pot, knee_angle_transform);
+  hip_joint = new Joint(
+      hip_valve, hip_pot, hip_angle_transform, hip_pid);
+  thigh_joint = new Joint(
+      thigh_valve, thigh_pot, thigh_angle_transform, thigh_pid);
+  knee_joint = new Joint(
+      knee_valve, knee_pot, knee_angle_transform, knee_pid);
 
   kinematics = new Kinematics(false);
 

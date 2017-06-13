@@ -11,6 +11,7 @@
 
 #include <ADC.h>
 
+#include "defaults.h"
 #include "estop.h"
 #include "stompy_pins.h"
 #include "geometry.h"
@@ -70,18 +71,27 @@ class Leg {
     LEG_NUMBER leg_number;
     EStop* estop;
     ADC* adc;
+
     StringPot* hip_pot;
     StringPot* thigh_pot;
     StringPot* knee_pot;
+
     Valve* hip_valve;
     Valve* thigh_valve;
     Valve* knee_valve;
+
     Joint* hip_joint;
     Joint* thigh_joint;
     Joint* knee_joint;
+
     JointAngleTransform* hip_angle_transform;
     JointAngleTransform* thigh_angle_transform;
     JointAngleTransform* knee_angle_transform;
+
+    PID* hip_pid;
+    PID* thigh_pid;
+    PID* knee_pid;
+
     Kinematics* kinematics;
 
     Angle3D joint_angles;

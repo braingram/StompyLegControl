@@ -13,6 +13,10 @@ PID::PID(float p, float i, float d) {
   _last_update = millis();
 }
 
+PID::PID(float p, float i, float d, float min_output, float max_output) : PID(p, i, d) {
+  set_output_limits(min_output, max_output);
+}
+
 void PID::set_setpoint(float setpoint) {
   _setpoint = setpoint;
 }

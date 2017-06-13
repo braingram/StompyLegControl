@@ -1,14 +1,17 @@
 #include "joint.h"
 
 
-Joint::Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform) {
+Joint::Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform, PID* pid) {
   _valve = valve;
   _pot = pot;
   _angle_transform = angle_transform;
+  _pid = pid;
+  /*
   _pid = new PID(&_current_adc_value, &_pid_output, &_target_adc_value, 2., 0., 0., DIRECT);
   _pid->SetSampleTime(1);
   _pid->SetOutputLimits(-(1 << 16), (1 >> 16));
   _pid->SetMode(AUTOMATIC);
+  */
 };
 
 bool Joint::set_target_angle(float angle) {
@@ -45,6 +48,7 @@ void Joint::update() {
   _current_adc_value = _pot->read_adc();
   // if live, 
   if (!_valve->get_enabled()) return;
+  /*
   // pid input 0->2 ** 12
   _pid->Compute();
   // ran = _pid.Compute();
@@ -62,4 +66,5 @@ void Joint::update() {
   };
   // set output
   _valve->set_pwm(pwm);
+  */
 };
