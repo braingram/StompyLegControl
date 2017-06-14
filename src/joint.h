@@ -26,6 +26,9 @@ class Joint {
     float get_target_length();
     unsigned int get_target_adc_value();
 
+    float get_current_length();
+    float get_current_angle();
+
     void update();
   private:
     Valve* _valve;

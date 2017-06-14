@@ -37,12 +37,11 @@ StringPot::StringPot(int pin, ADC* adc, int adc_number, unsigned int adc_min, un
 
 float StringPot::read_length() {
   read_adc();
-  _length = adc_value_to_length(_adc_value);
-  return _length;
+  return get_length();
 }
 
 float StringPot::get_length() {
-  return _length;
+  return adc_value_to_length(_adc_value);
 }
 
 float StringPot::adc_value_to_length(unsigned int adc_value) {

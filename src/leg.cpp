@@ -91,12 +91,16 @@ void Leg::update() {
 
   // TODO check that plan is still valid
 
-  // TODO update all joints
+  // update all joints, this will read the sensors
   hip_joint->update();
   thigh_joint->update();
   knee_joint->update();
 
-  // TODO compute joint angles (at some interval?)
+  // TODO compute joint angles (at some interval)
+  joint_angles.hip = hip_joint->get_current_angle();
+  joint_angles.thigh = thigh_joint->get_current_angle();
+  joint_angles.knee = knee_joint->get_current_angle();
 
-  // TODO compute foot xyz
+  // TODO compute foot xyz (at some interval)
+  kinematics->angles_to_xyz(joint_angles, &foot_position);
 };

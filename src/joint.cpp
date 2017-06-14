@@ -44,8 +44,16 @@ unsigned int Joint::get_target_adc_value() {
   return _target_adc_value;
 };
 
+float Joint::get_current_length() {
+  return _pot->get_length();
+};
+
+float Joint::get_current_angle() {
+  return _angle_transform->length_to_angle(get_current_length());
+};
+
 void Joint::update() {
-  _current_adc_value = _pot->read_adc();
+  _pot->read_adc();
   // if live, 
   if (!_valve->get_enabled()) return;
   /*
