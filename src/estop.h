@@ -23,12 +23,16 @@
 
 #include "Arduino.h"
 
+//#define ESTOP_STATUS_PIN 13
+
 #define ESTOP_OFF 0
 #define ESTOP_SOFT 1
 #define ESTOP_HARD 2
 
 #define ESTOP_ON 2
 #define ESTOP_HEARTBEAT 2
+
+#define ESTOP_DEFAULT 2
 
 #define HEARTBEAT_TIMEOUT 1000  // milliseconds
 

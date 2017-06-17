@@ -13,14 +13,15 @@
 
 #include "defaults.h"
 #include "estop.h"
-#include "stompy_pins.h"
-#include "geometry.h"
-#include "sensors.h"
-#include "transforms.h"
-#include "point.h"
 #include "kinematics.h"
-#include "valve.h"
+#include "geometry.h"
 #include "joint.h"
+#include "plan.h"
+#include "point.h"
+#include "sensors.h"
+#include "stompy_pins.h"
+#include "transforms.h"
+#include "valve.h"
 
 
 /*
@@ -52,12 +53,12 @@
 
 
 enum class LEG_NUMBER : uint8_t {
-  FR,
-  MR,
-  RR,
-  RL,
-  ML,
   FL,
+  ML,
+  RL,
+  RR,
+  MR,
+  FR,
   UNDEFINED,
 };
 
@@ -97,9 +98,17 @@ class Leg {
     Angle3D joint_angles;
     Point3D foot_position;
 
+    Point3D target_position;
+    unsigned long last_target_point_generation_time;
+    PlanStruct current_plan;
+    PlanStruct next_plan;
+
+    void compute_foot_position();
+    void set_next_plan(PlanStruct new_plan);
+
+    void disable_valves();
+    void enable_valves();
   private:
-    // TODO make some of these public?
-    bool _defined;
 };
 
 #endif

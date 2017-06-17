@@ -21,20 +21,32 @@ void PID::set_setpoint(float setpoint) {
   _setpoint = setpoint;
 }
 
+float PID::get_setpoint() {
+  return _setpoint;
+}
+
 void PID::set_output_limits(float min_output, float max_output) {
   if (min_output > max_output) return;
   _min_output = min_output;
   _max_output = max_output;
 }
 
+float PID::get_output_min() {
+  return _min_output;
+}
+
+float PID::get_output_max() {
+  return _max_output;
+}
 
 float PID::update(float input) {
   unsigned long t = millis();
+  if (t == _last_update) return _output;  // TODO workaround
   float dt = ((unsigned long)(t - _last_update)) / 1000.;
 
   // compute error
   float previous_error = _error;
-  float _error = _setpoint - input;
+  _error = _setpoint - input;
 
   // compute i term
   _i_term += (_i * _error * dt);

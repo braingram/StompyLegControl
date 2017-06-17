@@ -51,3 +51,5 @@
 #define M1FB_PIN		21
 #define M2FB_PIN		22
 #define M1FB_HIP_PIN		23
+
+#define STATUS_PIN 13

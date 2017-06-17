@@ -15,9 +15,13 @@ class PID {
     PID(float p, float i, float d);
     PID(float p, float i, float d, float min_output, float max_output);
 
+    // output limits of PID
     void set_output_limits(float min_output, float max_output);
+    float get_output_min();
+    float get_output_max();
 
     void set_setpoint(float setpoint);
+    float get_setpoint();
 
     float update(float input);
     float get_output();

@@ -41,7 +41,7 @@ void Valve::set_pwm(int pwm) {
   if (pwm > 0) {
     extend_pwm(pwm);
   } else {
-    retract_pwm(pwm);
+    retract_pwm(-pwm);
   };
 }
 
@@ -65,7 +65,7 @@ void Valve::set_ratio(float ratio) {
   if (ratio > 0) {
     extend_ratio(ratio);
   } else {
-    retract_ratio(ratio);
+    retract_ratio(-ratio);
   };
 }
 

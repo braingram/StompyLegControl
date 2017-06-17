@@ -2,10 +2,18 @@
 
 EStop::EStop() {
   _estop = ESTOP_ON;
+  //pinMode(ESTOP_STATUS_PIN, OUTPUT);
 };
 
 byte EStop::set_estop(byte severity) {
   _estop = severity;
+  /*
+  if (_estop == ESTOP_OFF) {
+    digitalWrite(ESTOP_STATUS_PIN, HIGH);
+  } else {
+    digitalWrite(ESTOP_STATUS_PIN, LOW);
+  };
+  */
   return severity;
 };
 

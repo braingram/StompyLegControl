@@ -6,29 +6,31 @@ Joint::Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform,
   _pot = pot;
   _angle_transform = angle_transform;
   _pid = pid;
-  /*
-  _pid = new PID(&_current_adc_value, &_pid_output, &_target_adc_value, 2., 0., 0., DIRECT);
-  _pid->SetSampleTime(1);
-  _pid->SetOutputLimits(-(1 << 16), (1 >> 16));
-  _pid->SetMode(AUTOMATIC);
-  */
+  _pwm_min = 0;
+  _pwm_max = 0;
+  _min_pid_output = 0;
+};
+
+void Joint::set_pwm_limits(int pwm_min, int pwm_max) {
+  _pwm_min = pwm_min;
+  _pwm_max = pwm_max;
 };
 
 bool Joint::set_target_angle(float angle) {
   _target_angle = angle;
   _target_length = _angle_transform->angle_to_length(angle);
-  _target_adc_value = _pot->length_to_adc_value(_target_length);
+  _pid->set_setpoint(_pot->length_to_adc_value(_target_length));
 };
 
 bool Joint::set_target_length(float length) {
   _target_length = length;
   _target_angle = _angle_transform->length_to_angle(length);
-  _target_adc_value = _pot->length_to_adc_value(_target_length);
+  _pid->set_setpoint(_pot->length_to_adc_value(_target_length));
 };
 
 bool Joint::set_target_adc_value(unsigned int adc_value) {
-  _target_adc_value = adc_value;
-  _target_length = _pot->adc_value_to_length(_target_adc_value);
+  _pid->set_setpoint(adc_value);
+  _target_length = _pot->adc_value_to_length(adc_value);
   _target_angle = _angle_transform->length_to_angle(_target_length);
 };
 
@@ -41,7 +43,7 @@ float Joint::get_target_length() {
 };
 
 unsigned int Joint::get_target_adc_value() {
-  return _target_adc_value;
+  return _pid->get_setpoint();
 };
 
 float Joint::get_current_length() {
@@ -52,10 +54,36 @@ float Joint::get_current_angle() {
   return _angle_transform->length_to_angle(get_current_length());
 };
 
+float Joint::get_pid_output() {
+  return _pid_output;
+};
+
 void Joint::update() {
   _pot->read_adc();
   // if live, 
-  if (!_valve->get_enabled()) return;
+  if (!_valve->get_enabled()) {
+    _pid->reset();
+    return;
+  };
+  // TODO only update every n ms?
+  _pid_output = _pid->update(_pot->get_adc_value());
+  //int pwm = _pid_output;
+  int pwm = 0;
+  if (abs(_pid_output) < _min_pid_output) {
+    pwm = 0;
+  } else {
+    if (_pid_output > 0) {
+      //pwm = _pid_output;
+      pwm = map(_pid_output, 0, _pid->get_output_max(), _pwm_min, _pwm_max);
+      //pwm = _pid_output / _pid->get_output_max() * (_pwm_max - _pwm_min) + _pwm_min;
+    } else {
+      //pwm = _pid_output;
+      pwm = -map(-_pid_output, 0, -_pid->get_output_min(), _pwm_min, _pwm_max);
+      //pwm = -(_pid_output / _pid->get_output_min() * (_pwm_max - _pwm_min) + _pwm_min);
+    };
+  };
+  //_pid_output = abs(_pid_output);
+  _valve->set_pwm(pwm);
   /*
   // pid input 0->2 ** 12
   _pid->Compute();

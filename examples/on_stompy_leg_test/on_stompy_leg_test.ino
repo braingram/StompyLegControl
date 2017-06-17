@@ -17,11 +17,13 @@ char to_print = 's';
 void setup() {
   Serial.begin(9600);
   leg->set_leg_number(LEG_NUMBER::FR);
+  leg->disable_valves();
 }
 
 void loop() {
   timer = 0;
   leg->update();
+  leg->compute_foot_position();
   unsigned long us = timer;
   time_sum += us; time_n += 1;
   

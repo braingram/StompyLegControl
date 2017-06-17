@@ -4,8 +4,8 @@
 	Released into the public domain -- so help you God.
 */
 
-#ifndef ESTOP_H
-#define ESTOP_H
+#ifndef PLAN_H
+#define PLAN_H
 
 #include "Arduino.h"
 #include "point.h"
@@ -28,6 +28,8 @@ struct PlanStruct {
   Angle3D angular;
   float speed;
   unsigned long start_time;
+  bool active;
 };
 
+bool follow_plan(PlanStruct plan, Point3D current, Point3D* target, float dt);
 #endif
