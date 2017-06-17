@@ -102,6 +102,9 @@ void Leg::update() {
   // if estop is active, disable all valves
   if ((estop->is_stopped()) | (leg_number == LEG_NUMBER::UNDEFINED)) {
     disable_valves();
+    hip_pid->reset();
+    thigh_pid->reset();
+    knee_pid->reset();
   } else {
     enable_valves();
   };
