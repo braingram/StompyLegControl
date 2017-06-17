@@ -14,6 +14,12 @@ struct Point3D {
 };
 
 struct Angle3D {
+  float x;
+  float y;
+  float z;
+};
+
+struct JointAngle3D {
   float hip;
   float thigh;
   float knee;

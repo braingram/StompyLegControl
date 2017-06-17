@@ -9,6 +9,9 @@ Joint::Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform,
   _pwm_min = 0;
   _pwm_max = 0;
   _min_pid_output = 0;
+
+  _pot->read_adc();
+  set_target_adc_value(_pot->get_adc_value());
 };
 
 void Joint::set_pwm_limits(int pwm_min, int pwm_max) {

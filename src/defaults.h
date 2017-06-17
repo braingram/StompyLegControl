@@ -33,8 +33,8 @@
 // === PID values ===
 //#define HIP_P 2.0
 //#define HIP_I 0.0
-#define HIP_P 5.0
-#define HIP_I 2.0
+#define HIP_P 30.0
+#define HIP_I 20.0
 #define HIP_D 0.0
 #define HIP_PID_MIN -65535
 #define HIP_PID_MAX 65535

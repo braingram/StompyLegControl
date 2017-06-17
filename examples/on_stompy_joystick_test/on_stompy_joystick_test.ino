@@ -16,6 +16,7 @@ elapsedMillis adc_timer;
 #define CMD_ADC_TARGET 4
 #define CMD_PWM_VALUE 5
 #define CMD_PID_OUTPUT 6
+#define CMD_PLAN 7
 
 void on_estop(CommandProtocol *cmd){
   byte severity = ESTOP_DEFAULT;
@@ -78,6 +79,35 @@ void on_adc_target(CommandProtocol *cmd) {
   leg->knee_joint->set_target_adc_value(knee_target);
 }
 
+void on_plan(CommandProtocol *cmd) {
+  // mode, frame, linear(xyz), angular(xyz), speed, start_time
+  if (!cmd->has_arg()) return;
+  PlanStruct new_plan;
+  new_plan.mode = cmd->get_arg<byte>();
+  if (!cmd->has_arg()) return;
+  new_plan.frame = cmd->get_arg<byte>();
+  if (!cmd->has_arg()) return;
+  new_plan.linear.x = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  new_plan.linear.y = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  new_plan.linear.z = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  new_plan.angular.x = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  new_plan.angular.y = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  new_plan.angular.z = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  new_plan.speed = cmd->get_arg<float>();
+  if (cmd->has_arg()) {
+    new_plan.start_time = cmd->get_arg<float>();
+  } else {
+    new_plan.start_time = millis();
+  }
+  leg->set_next_plan(new_plan);
+}
+
 void setup(){
   Serial.begin(9600);
   leg->set_leg_number(LEG_NUMBER::FR);
@@ -87,6 +117,7 @@ void setup(){
   cmd.register_callback(CMD_HEARTBEAT, on_heartbeat);
   cmd.register_callback(CMD_PWM, on_pwm);
   cmd.register_callback(CMD_ADC_TARGET, on_adc_target);
+  cmd.register_callback(CMD_PLAN, on_plan);
 }
 
 void loop() {

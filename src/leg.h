@@ -95,7 +95,7 @@ class Leg {
 
     Kinematics* kinematics;
 
-    Angle3D joint_angles;
+    JointAngle3D joint_angles;
     Point3D foot_position;
 
     Point3D target_position;

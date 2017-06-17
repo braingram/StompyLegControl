@@ -73,11 +73,12 @@ Leg::Leg() {
   leg_number = LEG_NUMBER::UNDEFINED;
   // TODO read leg number from eeprom
 
-  target_position.x = 0;
-  target_position.y = 0;
-  target_position.z = 0;
+  target_position.x = hip_pot->get_adc_value();
+  target_position.y = thigh_pot->get_adc_value();
+  target_position.z = knee_pot->get_adc_value();
 
   current_plan.mode = PLAN_STOP_MODE;
+  current_plan.frame = PLAN_SENSOR_FRAME;
   current_plan.active = true;
   next_plan.active = false;
 
@@ -133,7 +134,7 @@ void Leg::update() {
       case (PLAN_LEG_FRAME):
         // target position is xyz
         // convert to angles, then to sensor units
-        Angle3D a;
+        JointAngle3D a;
         // TODO check return value, stop on false
         kinematics->xyz_to_angles(target_position, &a);
         hip_joint->set_target_angle(a.hip);

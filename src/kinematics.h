@@ -74,12 +74,12 @@ class Kinematics {
     bool angles_to_xyz(
         float hip, float thigh, float knee,
         float* x, float* y, float* z);
-    bool angles_to_xyz(Angle3D angles, Point3D* point);
+    bool angles_to_xyz(JointAngle3D angles, Point3D* point);
 
     bool xyz_to_angles(
         float x, float y, float z,
         float *hip, float* thigh, float* knee);
-    bool xyz_to_angles(Point3D point, Angle3D* angles);
+    bool xyz_to_angles(Point3D point, JointAngle3D* angles);
 
   private:
     bool _on_right_side;

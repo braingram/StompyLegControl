@@ -26,7 +26,7 @@ bool Kinematics::angles_to_xyz(float hip, float thigh, float knee, float* x, flo
   return true;
 };
 
-bool Kinematics::angles_to_xyz(Angle3D angles, Point3D* point) {
+bool Kinematics::angles_to_xyz(JointAngle3D angles, Point3D* point) {
   return angles_to_xyz(angles.hip, angles.thigh, angles.knee, &(point->x), &(point->y), &(point->z));
 };
 
@@ -62,7 +62,7 @@ bool Kinematics::xyz_to_angles(float x, float y, float z, float* hip, float* thi
   return true;
 };
 
-bool Kinematics::xyz_to_angles(Point3D point, Angle3D* angles) {
+bool Kinematics::xyz_to_angles(Point3D point, JointAngle3D* angles) {
   return xyz_to_angles(point.x, point.y, point.z, &(angles->hip), &(angles->thigh), &(angles->knee));
 };
 

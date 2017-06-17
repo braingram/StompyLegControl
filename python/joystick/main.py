@@ -17,6 +17,8 @@ cmds = {
     4: 'adc_target(uint32,uint32,uint32)',
     5: 'pwm=int32,int32,int32',
     6: 'pid=float,float,float',
+    #7: 'plan(byte,byte,float,float,float,float,float,float,float,uint32)',
+    7: 'plan(byte,byte,float,float,float,float,float,float,float)',
 }
 
 com = pycomando.Comando(serial.Serial('/dev/ttyACM0', 9600))
@@ -37,7 +39,8 @@ w, h = (640, 480)
 hs = h / 65535.
 npts = 200
 
-mode = 'pwm'
+#mode = 'pwm'
+mode = 'plan'
 #mode = 'target'
 
 jmap = {
@@ -90,6 +93,16 @@ while True:
             sys.exit()
         elif event.type == pygame.JOYAXISMOTION:
             #print event
+            if mode == 'plan':
+                if event.axis == 2:
+                    t = abs(event.value) * 60000
+                    print("Target plan speed:", t)
+                    if event.value > 0:
+                        ns.plan(
+                            1, 0, 1.0, 0., 0., 0., 0., 0., t)
+                    else:
+                        ns.plan(
+                            1, 0, -1.0, 0., 0., 0., 0., 0., t)
             if mode == 'target':
                 if event.axis == 2:
                     t = abs(event.value) * (64017 - 947) + 947
