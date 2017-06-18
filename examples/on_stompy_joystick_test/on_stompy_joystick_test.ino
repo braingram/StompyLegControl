@@ -18,6 +18,7 @@ elapsedMillis adc_timer;
 #define CMD_PID_OUTPUT 6
 #define CMD_PLAN 7
 #define CMD_ENABLE_PID 8
+//#define CMD_XYZ_VALUE 9
 
 void on_estop(CommandProtocol *cmd){
   byte severity = ESTOP_DEFAULT;
@@ -170,6 +171,13 @@ void loop() {
     cmd.add_arg(leg->thigh_valve->get_pwm());
     cmd.add_arg(leg->knee_valve->get_pwm());
     cmd.finish_command();
+    /*
+    cmd.start_command(CMD_XYZ_VALUE);
+    cmd.add_arg(leg->foot_position.x);
+    cmd.add_arg(leg->foot_position.y);
+    cmd.add_arg(leg->foot_position.z);
+    cmd.finish_command();
+    */
     adc_timer = 0;
   }
 }

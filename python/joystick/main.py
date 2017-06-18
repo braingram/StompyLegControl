@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 import sys
 import time
 
@@ -8,6 +9,12 @@ import serial
 
 import pycomando
 
+log_data = True
+
+log_filename = None
+if log_data and log_filename is None:
+    dt = datetime.datetime.now()
+    log_filename = dt.strftime('%y%m%d_%H%M%S.csv')
 
 cmds = {
     0: 'estop(byte)',  # 0 = off, 1 = soft, 2 = hard
@@ -20,6 +27,7 @@ cmds = {
     #7: 'plan(byte,byte,float,float,float,float,float,float,float,uint32)',
     7: 'plan(byte,byte,float,float,float,float,float,float,float)',
     8: 'enable_pid(bool)',
+    #9: 'xyz_value=float,float,float',
 }
 
 com = pycomando.Comando(serial.Serial('/dev/ttyACM0', 9600))
@@ -45,9 +53,9 @@ mode = 'pwm'
 #mode = 'target'
 
 jmap = {
-    0: lambda x, y, z: -z * 0.5,  # hip pwm
-    1: lambda x, y, z: -y * 0.5,  # thigh pwm
-    2: lambda x, y, z: -x * 0.5,  # knee pwm
+    0: lambda x, y, z: -z,  # hip pwm
+    1: lambda x, y, z: -y,  # thigh pwm
+    2: lambda x, y, z: -x,  # knee pwm
 }
 screen = pygame.display.set_mode((w, h))
 delay = 0.010  # s
@@ -59,24 +67,46 @@ last_heartbeat = time.time()
 
 pots = []
 
+log_file = None
+if log_data:
+    print("Logging to %s" % log_filename)
+    log_file = open(log_filename, 'w')
+    lf = lambda k, *vs: log_file.write('%s,%s\n' % (k, ','.join(map(str, vs))))
+else:
+    lf = lambda k, *vs: None
+
+
+start_time = time.time()
+
 
 def on_adc(hip, thigh, knee):
     pots.append((hip.value, thigh.value, knee.value))
+    lf(
+        'pots', start_time - time.time(),
+        hip.value, thigh.value, knee.value)
 
 
 def on_pwm_value(hip, thigh, knee):
     #print("PWM", hip, thigh, knee)
+    lf(
+        'pwm', start_time - time.time(),
+        hip.value, thigh.value, knee.value)
     pass
 
 
 def on_pid(hip, thigh, knee):
-    print("PID", hip, thigh, knee)
+    #print("PID", hip, thigh, knee)
     pass
+
+
+#def on_xyz_value(x, y, z):
+#    print("XYZ", x, y, z)
 
 
 mgr.on('adc', on_adc)
 mgr.on('pwm_value', on_pwm_value)
 mgr.on('pid', on_pid)
+#mgr.on('xyz_value', on_xyz_value)
 
 if mode == 'pwm':
     ns.enable_pid(False)
@@ -178,3 +208,6 @@ while True:
         pygame.draw.lines(
             screen, (0, 0, 255), False, kpts)
         pygame.display.update()
+
+if log_file is not None:
+    log_file.close()
