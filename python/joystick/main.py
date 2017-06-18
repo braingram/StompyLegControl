@@ -15,10 +15,11 @@ cmds = {
     2: 'pwm(float,float,float)',  # hip thigh knee
     3: 'adc=uint32,uint32,uint32',
     4: 'adc_target(uint32,uint32,uint32)',
-    5: 'pwm=int32,int32,int32',
+    5: 'pwm_value=int32,int32,int32',
     6: 'pid=float,float,float',
     #7: 'plan(byte,byte,float,float,float,float,float,float,float,uint32)',
     7: 'plan(byte,byte,float,float,float,float,float,float,float)',
+    8: 'enable_pid(bool)',
 }
 
 com = pycomando.Comando(serial.Serial('/dev/ttyACM0', 9600))
@@ -39,8 +40,8 @@ w, h = (640, 480)
 hs = h / 65535.
 npts = 200
 
-#mode = 'pwm'
-mode = 'plan'
+mode = 'pwm'
+#mode = 'plan'
 #mode = 'target'
 
 jmap = {
@@ -63,19 +64,24 @@ def on_adc(hip, thigh, knee):
     pots.append((hip.value, thigh.value, knee.value))
 
 
-def on_pwm(hip, thigh, knee):
+def on_pwm_value(hip, thigh, knee):
     #print("PWM", hip, thigh, knee)
     pass
 
 
 def on_pid(hip, thigh, knee):
-    #print("PID", hip, thigh, knee)
+    print("PID", hip, thigh, knee)
     pass
 
 
 mgr.on('adc', on_adc)
-mgr.on('pwm', on_pwm)
+mgr.on('pwm_value', on_pwm_value)
 mgr.on('pid', on_pid)
+
+if mode == 'pwm':
+    ns.enable_pid(False)
+else:
+    ns.enable_pid(True)
 
 last_update = time.time() - delay
 while True:
@@ -95,14 +101,22 @@ while True:
             #print event
             if mode == 'plan':
                 if event.axis == 2:
-                    t = abs(event.value) * 60000
-                    print("Target plan speed:", t)
+                    plan_speed = abs(event.value) * 60000
+                    #plan_speed = abs(event.value) * 2
+                    plan_mode = 1  # velocity
+                    plan_frame = 0  # sensor
+                    #plan_frame = 1  # joint
+                    #plan_frame = 2  # leg
+                    print("Target plan speed:", plan_speed)
                     if event.value > 0:
+                        # mode, frame, x,y,z, ax,ay,az, speed
                         ns.plan(
-                            1, 0, 1.0, 0., 0., 0., 0., 0., t)
+                            plan_mode, plan_frame,
+                            1.0, 0., 0., 0., 0., 0., plan_speed)
                     else:
                         ns.plan(
-                            1, 0, -1.0, 0., 0., 0., 0., 0., t)
+                            plan_mode, plan_frame,
+                            -1.0, 0., 0., 0., 0., 0., plan_speed)
             if mode == 'target':
                 if event.axis == 2:
                     t = abs(event.value) * (64017 - 947) + 947
@@ -147,15 +161,15 @@ while True:
         #print("Knee  Mean: %s" % (sums[2] / float(npts), ))
         screen.blit(
             myfont.render(
-                "Hip   Mean: %s" % (sums[0] / float(npts), ),
+                "Hip   Mean: %s[%s]" % (sums[0] / float(npts), p[0]),
                 False, (255, 0, 0)), (20, 20))
         screen.blit(
             myfont.render(
-                "Thigh Mean: %s" % (sums[1] / float(npts), ),
+                "Thigh Mean: %s[%s]" % (sums[1] / float(npts), p[1]),
                 False, (0, 255, 0)), (20, 40))
         screen.blit(
             myfont.render(
-                "Knee  Mean: %s" % (sums[2] / float(npts), ),
+                "Knee  Mean: %s[%s]" % (sums[2] / float(npts), p[2]),
                 False, (0, 0, 255)), (20, 60))
         pygame.draw.lines(
             screen, (255, 0, 0), False, hpts)

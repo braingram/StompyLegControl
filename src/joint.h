@@ -18,8 +18,6 @@ class Joint {
   public:
     Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform, PID* pid);
 
-    void set_pwm_limits(int pwm_min, int pwm_max);
-
     bool set_target_angle(float angle);
     bool set_target_length(float length);
     bool set_target_adc_value(unsigned int);
@@ -31,8 +29,11 @@ class Joint {
     float get_current_length();
     float get_current_angle();
 
+    void enable_pid();
+    void disable_pid();
     float get_pid_output();
 
+    void _update_pid();
     void update();
   private:
     Valve* _valve;
@@ -44,10 +45,9 @@ class Joint {
     float _target_length;
     float _target_adc_value;
 
+    bool _use_pid;
     float _min_pid_output;
     float _pid_output;
-    int _pwm_min;
-    int _pwm_max;
 };
 
 #endif

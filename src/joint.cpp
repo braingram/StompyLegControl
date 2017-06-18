@@ -6,17 +6,11 @@ Joint::Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform,
   _pot = pot;
   _angle_transform = angle_transform;
   _pid = pid;
-  _pwm_min = 0;
-  _pwm_max = 0;
   _min_pid_output = 0;
+  disable_pid();
 
   _pot->read_adc();
   set_target_adc_value(_pot->get_adc_value());
-};
-
-void Joint::set_pwm_limits(int pwm_min, int pwm_max) {
-  _pwm_min = pwm_min;
-  _pwm_max = pwm_max;
 };
 
 bool Joint::set_target_angle(float angle) {
@@ -57,8 +51,40 @@ float Joint::get_current_angle() {
   return _angle_transform->length_to_angle(get_current_length());
 };
 
+void Joint::enable_pid() {
+  _use_pid = true;
+  // when enabling the pid, start with the setpoint at the current adc value
+  _pot->read_adc();
+  set_target_adc_value(_pot->get_adc_value());
+};
+
+void Joint::disable_pid() {
+  _use_pid = false;
+};
+
 float Joint::get_pid_output() {
   return _pid_output;
+};
+
+void Joint::_update_pid() {
+  // TODO only update every n ms?
+  _pid_output = _pid->update(_pot->get_adc_value());
+  int pwm = 0;
+  if (abs(_pid_output) < _min_pid_output) {
+    pwm = 0;
+  } else {
+    if (_pid_output > 0) {
+      // TODO map this to 0-1? and use set ratio
+      pwm = map(
+        _pid_output, 0, _pid->get_output_max(),
+        _valve->get_extend_pwm_min(), _valve->get_extend_pwm_max());
+    } else {
+      pwm = -map(
+        -_pid_output, 0, -_pid->get_output_min(),
+        _valve->get_retract_pwm_min(), _valve->get_retract_pwm_max());
+    };
+  };
+  _valve->set_pwm(pwm);
 };
 
 void Joint::update() {
@@ -68,42 +94,7 @@ void Joint::update() {
     _pid->reset();
     return;
   };
-  // TODO only update every n ms?
-  _pid_output = _pid->update(_pot->get_adc_value());
-  //int pwm = _pid_output;
-  int pwm = 0;
-  if (abs(_pid_output) < _min_pid_output) {
-    pwm = 0;
-  } else {
-    if (_pid_output > 0) {
-      //pwm = _pid_output;
-      pwm = map(_pid_output, 0, _pid->get_output_max(), _pwm_min, _pwm_max);
-      //pwm = _pid_output / _pid->get_output_max() * (_pwm_max - _pwm_min) + _pwm_min;
-    } else {
-      //pwm = _pid_output;
-      pwm = -map(-_pid_output, 0, -_pid->get_output_min(), _pwm_min, _pwm_max);
-      //pwm = -(_pid_output / _pid->get_output_min() * (_pwm_max - _pwm_min) + _pwm_min);
-    };
+  if (_use_pid) {
+    _update_pid();
   };
-  //_pid_output = abs(_pid_output);
-  _valve->set_pwm(pwm);
-  /*
-  // pid input 0->2 ** 12
-  _pid->Compute();
-  // ran = _pid.Compute();
-  // if ran...
-  // pid output -2**12->2**12
-  // (optional) if output < T, output = 0
-  // map output from -V->0->V to pwm -MAX_PWM->-MIN_PWM->MIN_PWM->MAX_PWM
-  double pwm;
-  if (_pid_output > 0) {
-    pwm = map(_pid_output, 0, (1 >> 16), 0.3, 1.0);
-  } else if (_pid_output < 0) {
-    pwm = -map(-_pid_output, 0, (1 >> 16), 0.3, 1.0);
-  } else {
-    pwm = 0;
-  };
-  // set output
-  _valve->set_pwm(pwm);
-  */
 };

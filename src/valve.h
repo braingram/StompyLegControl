@@ -34,6 +34,18 @@ class Valve {
     void stop();
 
     // and setting by ratio (value from 0 to 1)
+    void set_pwm_limits(
+      int extend_min, int extend_max, int retract_min, int retract_max);
+    void set_extend_pwm_max(int max);
+    int get_extend_pwm_max();
+    void set_extend_pwm_min(int min);
+    int get_extend_pwm_min();
+    void set_retract_pwm_max(int max);
+    int get_retract_pwm_max();
+    void set_retract_pwm_min(int min);
+    int get_retract_pwm_min();
+
+
     void set_ratio(float ratio);
     void extend_ratio(float ratio);
     void retract_ratio(float ratio);
@@ -54,7 +66,10 @@ class Valve {
     int _retractPin;
     int _enablePin;
 
-    int _pwm_max;
+    int _extend_pwm_min;
+    int _extend_pwm_max;
+    int _retract_pwm_min;
+    int _retract_pwm_max;
 };
 
 #endif

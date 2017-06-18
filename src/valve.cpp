@@ -11,7 +11,7 @@ Valve::Valve(int extendPin, int retractPin, int enablePin, float frequency, int 
   _enablePin = enablePin;
 
   // compute max by resolution
-  _pwm_max = (1 << resolution) - 1;
+  set_pwm_limits(0, (1 << resolution) - 1, 0, (1 << resolution) - 1);
 
   // setup pins
   analogWriteFrequency(_extendPin, frequency);
@@ -46,20 +46,64 @@ void Valve::set_pwm(int pwm) {
 }
 
 void Valve::extend_pwm(int pwm) {
+  if (pwm <= _extend_pwm_min) return stop();
+  if (pwm > _extend_pwm_max) pwm = _extend_pwm_max;
   _pwm = pwm;
-  if (pwm == 0) return stop();
   analogWrite(_retractPin, 0);
   analogWrite(_extendPin, pwm);
   _direction = VALVE_EXTENDING;
 }
 
 void Valve::retract_pwm(int pwm) {
+  if (pwm <= _retract_pwm_min) return stop();
+  if (pwm > _retract_pwm_max) pwm = _retract_pwm_max;
   _pwm = pwm;
-  if (pwm == 0) return stop();
   analogWrite(_extendPin, 0);
   analogWrite(_retractPin, pwm);
   _direction = VALVE_RETRACTING;
 }
+
+void Valve::set_pwm_limits(int extend_min, int extend_max, int retract_min, int retract_max) {
+  if (extend_min > extend_max) return;
+  if (retract_min > retract_max) return;
+  set_extend_pwm_min(extend_min);
+  set_extend_pwm_max(extend_max);
+  set_retract_pwm_min(retract_min);
+  set_retract_pwm_max(retract_max);
+}
+
+void Valve::set_extend_pwm_max(int max) {
+  _extend_pwm_max = max;
+}
+
+int Valve::get_extend_pwm_max() {
+  return _extend_pwm_max;
+}
+
+void Valve::set_extend_pwm_min(int min) {
+  _extend_pwm_min = min;
+}
+
+int Valve::get_extend_pwm_min() {
+  return _extend_pwm_min;
+}
+
+void Valve::set_retract_pwm_max(int max) {
+  _retract_pwm_max = max;
+}
+
+int Valve::get_retract_pwm_max() {
+  return _retract_pwm_max;
+}
+
+void Valve::set_retract_pwm_min(int min) {
+  _retract_pwm_min = min;
+}
+
+int Valve::get_retract_pwm_min() {
+  return _retract_pwm_min;
+}
+
 
 void Valve::set_ratio(float ratio) {
   if (ratio > 0) {
@@ -70,11 +114,13 @@ void Valve::set_ratio(float ratio) {
 }
 
 void Valve::extend_ratio(float ratio) {
-  extend_pwm(ratio * _pwm_max);
+  extend_pwm(
+    ratio * (_extend_pwm_max - _extend_pwm_min) + _extend_pwm_min);
 }
 
 void Valve::retract_ratio(float ratio) {
-  retract_pwm(ratio * _pwm_max);
+  retract_pwm(
+    ratio * (_retract_pwm_max - _retract_pwm_min) + _retract_pwm_min);
 }
 
 void Valve::enable() {

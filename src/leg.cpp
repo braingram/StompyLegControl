@@ -51,10 +51,19 @@ Leg::Leg() {
 
   hip_valve = new Valve(
       HIP_EXTEND_PIN, HIP_RETRACT_PIN, HIP_ENABLE_PIN);
+  hip_valve->set_pwm_limits(
+      HIP_EXTEND_PWM_MIN, HIP_EXTEND_PWM_MAX,
+      HIP_RETRACT_PWM_MIN, HIP_RETRACT_PWM_MAX);
   thigh_valve = new Valve(
       THIGH_EXTEND_PIN, THIGH_RETRACT_PIN, THIGH_ENABLE_PIN);
+  thigh_valve->set_pwm_limits(
+      THIGH_EXTEND_PWM_MIN, THIGH_EXTEND_PWM_MAX,
+      THIGH_RETRACT_PWM_MIN, THIGH_RETRACT_PWM_MAX);
   knee_valve = new Valve(
       KNEE_EXTEND_PIN, KNEE_RETRACT_PIN, KNEE_ENABLE_PIN);
+  knee_valve->set_pwm_limits(
+      KNEE_EXTEND_PWM_MIN, KNEE_EXTEND_PWM_MAX,
+      KNEE_RETRACT_PWM_MIN, KNEE_RETRACT_PWM_MAX);
 
 
   hip_joint = new Joint(
@@ -63,10 +72,6 @@ Leg::Leg() {
       thigh_valve, thigh_pot, thigh_angle_transform, thigh_pid);
   knee_joint = new Joint(
       knee_valve, knee_pot, knee_angle_transform, knee_pid);
-
-  hip_joint->set_pwm_limits(HIP_EXTEND_PWM_MIN, HIP_PWM_MAX);
-  thigh_joint->set_pwm_limits(THIGH_EXTEND_PWM_MIN, KNEE_PWM_MAX);
-  knee_joint->set_pwm_limits(THIGH_EXTEND_PWM_MIN, KNEE_PWM_MAX);
 
   kinematics = new Kinematics(false);
 
@@ -107,12 +112,123 @@ void Leg::update() {
     knee_pid->reset();
   } else {
     enable_valves();
+    // update plan/target
+    _update_plan();
   };
 
+  // update all joints, this will read the sensors
+  hip_joint->update();
+  thigh_joint->update();
+  knee_joint->update();
+};
+
+void Leg::_update_plan() {
   // check that plan is still valid
   if (next_plan.active) {
     long pdt = next_plan.start_time - millis();
     if (pdt <= 0) {
+      if (current_plan.frame != next_plan.frame) {
+        // convert current target position to new frame
+        JointAngle3D a;
+        switch (current_plan.frame) {
+          case (PLAN_BODY_FRAME):
+            switch (next_plan.frame) {
+              case (PLAN_LEG_FRAME):
+                break;
+              case (PLAN_JOINT_FRAME):
+                break;
+              case (PLAN_SENSOR_FRAME):
+                break;
+            };
+            break;
+          case (PLAN_LEG_FRAME):
+            switch (next_plan.frame) {
+              case (PLAN_BODY_FRAME):
+                break;
+              case (PLAN_JOINT_FRAME):
+                // xyz -> angles
+                // TODO check return value, stop on false
+                kinematics->xyz_to_angles(
+                  target_position, &a);
+                target_position.x = a.hip;
+                target_position.y = a.thigh;
+                target_position.z = a.knee;
+                break;
+              case (PLAN_SENSOR_FRAME):
+                // xyz -> angles -> sensor
+                // TODO check return value, stop on false
+                kinematics->xyz_to_angles(
+                  target_position, &a);
+                target_position.x = hip_pot->length_to_adc_value(
+                    hip_angle_transform->angle_to_length(a.hip));
+                target_position.y = thigh_pot->length_to_adc_value(
+                    thigh_angle_transform->angle_to_length(a.thigh));
+                target_position.z = knee_pot->length_to_adc_value(
+                    knee_angle_transform->angle_to_length(a.knee));
+                break;
+            };
+            break;
+          case (PLAN_JOINT_FRAME):
+            switch (next_plan.frame) {
+              case (PLAN_BODY_FRAME):
+                break;
+              case (PLAN_LEG_FRAME):
+                // angles -> xyz
+                a.hip = target_position.x;
+                a.thigh = target_position.y;
+                a.knee = target_position.z;
+                // TODO check return value, stop on false
+                kinematics->angles_to_xyz(a, &target_position);
+                break;
+              case (PLAN_SENSOR_FRAME):
+                // angles -> sensors
+                target_position.x = hip_pot->length_to_adc_value(
+                    hip_angle_transform->angle_to_length(
+                      target_position.x));
+                target_position.y = thigh_pot->length_to_adc_value(
+                    thigh_angle_transform->angle_to_length(
+                      target_position.y));
+                target_position.z = knee_pot->length_to_adc_value(
+                    knee_angle_transform->angle_to_length(
+                      target_position.z));
+                break;
+            };
+            break;
+          case (PLAN_SENSOR_FRAME):
+            switch (next_plan.frame) {
+              case (PLAN_BODY_FRAME):
+                break;
+              case (PLAN_LEG_FRAME):
+                // sensors -> angles -> xyz
+                a.hip = hip_angle_transform->length_to_angle(
+                    hip_pot->adc_value_to_length(
+                      target_position.x));
+                a.thigh = thigh_angle_transform->length_to_angle(
+                    thigh_pot->adc_value_to_length(
+                      target_position.y));
+                a.knee = knee_angle_transform->length_to_angle(
+                    knee_pot->adc_value_to_length(
+                      target_position.z));
+                // TODO check return value, stop on false
+                kinematics->angles_to_xyz(a, &target_position);
+                break;
+              case (PLAN_JOINT_FRAME):
+                // sensors -> angles
+                target_position.x = hip_angle_transform->length_to_angle(
+                    hip_pot->adc_value_to_length(
+                      target_position.x));
+                target_position.y = thigh_angle_transform->length_to_angle(
+                    thigh_pot->adc_value_to_length(
+                      target_position.y));
+                target_position.z = knee_angle_transform->length_to_angle(
+                    knee_pot->adc_value_to_length(
+                      target_position.z));
+
+                break;
+            };
+            break;
+        };
+      };
       current_plan = next_plan;
       next_plan.active = false;
  
@@ -160,11 +276,6 @@ void Leg::update() {
         break;
     };
   };
-
-  // update all joints, this will read the sensors
-  hip_joint->update();
-  thigh_joint->update();
-  knee_joint->update();
 };
 
 void Leg::compute_foot_position() {
@@ -174,6 +285,7 @@ void Leg::compute_foot_position() {
   joint_angles.knee = knee_joint->get_current_angle();
 
   // compute foot xyz
+  // TODO check return value, stop on false
   kinematics->angles_to_xyz(joint_angles, &foot_position);
 };
 
@@ -194,4 +306,28 @@ void Leg::enable_valves() {
   thigh_valve->enable();
   knee_valve->enable();
   digitalWrite(STATUS_PIN, HIGH);
+};
+
+void Leg::enable_pids() {
+  hip_joint->enable_pid();
+  thigh_joint->enable_pid();
+  knee_joint->enable_pid();
+  // TODO bring the below out to a nicer function
+  // overwrite target position to be HERE
+  // TODO should this happen on a estop release also?
+  target_position.x = hip_pot->get_adc_value();
+  target_position.y = thigh_pot->get_adc_value();
+  target_position.z = knee_pot->get_adc_value();
+
+  current_plan.mode = PLAN_STOP_MODE;
+  current_plan.frame = PLAN_SENSOR_FRAME;
+  current_plan.active = true;
+  next_plan.active = false;
+
+};
+
+void Leg::disable_pids() {
+  hip_joint->disable_pid();
+  thigh_joint->disable_pid();
+  knee_joint->disable_pid();
 };

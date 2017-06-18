@@ -17,6 +17,7 @@ elapsedMillis adc_timer;
 #define CMD_PWM_VALUE 5
 #define CMD_PID_OUTPUT 6
 #define CMD_PLAN 7
+#define CMD_ENABLE_PID 8
 
 void on_estop(CommandProtocol *cmd){
   byte severity = ESTOP_DEFAULT;
@@ -51,7 +52,7 @@ void on_pwm(CommandProtocol *cmd) {
   };
   leg->hip_valve->set_ratio(hip_pwm);
   leg->thigh_valve->set_ratio(thigh_pwm);
-  leg->knee_valve->set_pwm(knee_pwm);
+  leg->knee_valve->set_ratio(knee_pwm);
 };
 
 
@@ -108,6 +109,18 @@ void on_plan(CommandProtocol *cmd) {
   leg->set_next_plan(new_plan);
 }
 
+void on_enable_pid(CommandProtocol *cmd) {
+  bool e = true;
+  if (cmd->has_arg()) {
+    e = cmd->get_arg<bool>();
+  }
+  if (e) {
+    leg->enable_pids();
+  } else {
+    leg->disable_pids();
+  };
+}
+
 void setup(){
   Serial.begin(9600);
   leg->set_leg_number(LEG_NUMBER::FR);
@@ -118,6 +131,7 @@ void setup(){
   cmd.register_callback(CMD_PWM, on_pwm);
   cmd.register_callback(CMD_ADC_TARGET, on_adc_target);
   cmd.register_callback(CMD_PLAN, on_plan);
+  cmd.register_callback(CMD_ENABLE_PID, on_enable_pid);
 }
 
 void loop() {

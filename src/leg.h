@@ -53,13 +53,13 @@
 
 
 enum class LEG_NUMBER : uint8_t {
+  UNDEFINED,
   FL,
   ML,
   RL,
   RR,
   MR,
   FR,
-  UNDEFINED,
 };
 
 
@@ -67,6 +67,7 @@ class Leg {
   public:
     Leg();
     void set_leg_number(LEG_NUMBER leg);
+    void _update_plan();
     void update();
 
     LEG_NUMBER leg_number;
@@ -108,6 +109,8 @@ class Leg {
 
     void disable_valves();
     void enable_valves();
+    void enable_pids();
+    void disable_pids();
   private:
 };
 
