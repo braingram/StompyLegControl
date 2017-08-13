@@ -52,6 +52,19 @@ unsigned int StringPot::length_to_adc_value(float length) {
   return (unsigned int)(_transform->dst_to_src(length));
 }
 
+void StringPot::set_adc_min(float value) {
+  ((LinearTransform *)_transform)->set_src_min(value);
+}
+
+void StringPot::set_adc_max(float value) {
+  ((LinearTransform *)_transform)->set_src_max(value);
+}
+
+void StringPot::set_adc_range(float min_value, float max_value) {
+  set_adc_min(min_value);
+  set_adc_max(max_value);
+}
+
 
 /* ========================================================
  *                   PressureSensor

@@ -13,9 +13,10 @@
 
 #include "defaults.h"
 #include "estop.h"
-#include "kinematics.h"
 #include "geometry.h"
 #include "joint.h"
+#include "kinematics.h"
+#include "legnumber.h"
 #include "plan.h"
 #include "point.h"
 #include "sensors.h"
@@ -51,18 +52,6 @@
  * - update all joints
  */
 
-
-enum class LEG_NUMBER : uint8_t {
-  UNDEFINED,
-  FL,
-  ML,
-  RL,
-  RR,
-  MR,
-  FR,
-};
-
-
 class Leg {
   public:
     Leg();
@@ -96,8 +85,10 @@ class Leg {
 
     Kinematics* kinematics;
 
+    // used only for reporting
     JointAngle3D joint_angles;
     Point3D foot_position;
+    bool foot_position_valid;
 
     Point3D target_position;
     unsigned long last_target_point_generation_time;
@@ -111,6 +102,9 @@ class Leg {
     void enable_valves();
     void enable_pids();
     void disable_pids();
+
+    // overwrite current plan, set to stop in sensor frame
+    void hold_position();
   private:
 };
 

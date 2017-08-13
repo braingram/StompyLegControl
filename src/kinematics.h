@@ -38,38 +38,18 @@
 
 #include "Arduino.h"
 
+#include "legnumber.h"
 #include "point.h"
 
 
 class Kinematics {
   public:
-    // TODO
-    // - different hip types
-    // - different sides (right, left)
-    // - input should be string pot lengths
-    Kinematics(bool on_right_side);
-    /*
+    Kinematics(LEG_NUMBER leg_number);
+    void set_leg_number(LEG_NUMBER leg_number);
 
-    angles to xyz
-    JointAngleTransforms: (zero angles?)
-      hip_length_to_angle(length)
-      thigh_length_to_angle(length)
-      knee_length_to_angle(length)
-
-      angles_to_xyz
-      xyz_to_angles
-
-    Sensor to angle?
-
-    angle_to_sensor(joint, angle)
-    sensor_to_angle(joint, sensor_reading)
-    angle_to_rad(angle)
-    angles_to_xyz(angles, xyz)
-    angles_rad_to_xyz(angles_rad, xyz)
-    xyz_to_angles(xyz, angles)
-    xyz_to_sensors(xyz, sensors)
-    sensors_to_xyz(sensors, xyz)
-    */
+    bool angles_in_limits(
+        float hip, float thigh, float knee);
+    // TODO add foot limit
 
     bool angles_to_xyz(
         float hip, float thigh, float knee,
@@ -82,7 +62,9 @@ class Kinematics {
     bool xyz_to_angles(Point3D point, JointAngle3D* angles);
 
   private:
-    bool _on_right_side;
+    LEG_NUMBER _leg_number;
+    float _hip_min;
+    float _hip_max;
 };
 
 #endif

@@ -1,106 +1,72 @@
-#include <ADC.h>
-#include <RingBuffer.h>
-#include <RingBufferDMA.h>
-#include <ADC_Module.h>
+#include "leg.h"
 
-#include "stompy_pins.h"
-#include "geometry.h"
-#include "sensors.h"
-#include "transforms.h"
-#include "point.h"
-#include "kinematics.h"
+// numbers from 170807 for MR
+#define HIP_ADC_MIN 7073
+#define HIP_ADC_MAX 52174
+#define THIGH_ADC_MIN 3584
+#define THIGH_ADC_MAX 59758
+#define KNEE_ADC_MIN 9040
+#define KNEE_ADC_MAX 59086
 
-#define PLOT_VALUES
-#define PLOT_POTS
-#define PLOT_ANGLES
-#define PLOT_XYZ
+byte to_print = 'v';
 
-ADC* adc = new ADC();
+Leg* leg = new Leg();
 
-StringPot* hip_pot = new StringPot(
-  HIP_SENSOR_PIN, adc, ADC_0,
-  5952, 46208,  // 372, 2888
-  HIP_CYLINDER_MIN_LENGTH, HIP_CYLINDER_MAX_LENGTH);
+void setup(){
+  Serial.begin(9600);
+  // first set estop to default value
+  leg->estop->set_estop(ESTOP_DEFAULT);
+  // for now, set leg number in sketch
+  leg->set_leg_number(LEG_NUMBER::MR);
+  // disable pids, set pwms to 0
+  leg->disable_pids();
+  leg->hip_valve->set_ratio(0);
+  leg->thigh_valve->set_ratio(0);
+  leg->knee_valve->set_ratio(0);
 
-StringPot* thigh_pot = new StringPot(
-  THIGH_SENSOR_PIN, adc, ADC_1,
-  2176, 58688,  // 136, 3668
-  THIGH_CYLINDER_MIN_LENGTH, THIGH_CYLINDER_MAX_LENGTH);
+  // override calibration
+  leg->hip_pot->set_adc_range(HIP_ADC_MIN, HIP_ADC_MAX);
+  leg->thigh_pot->set_adc_range(THIGH_ADC_MIN, THIGH_ADC_MAX);
+  leg->knee_pot->set_adc_range(KNEE_ADC_MIN, KNEE_ADC_MAX);
+};
 
-StringPot* knee_pot = new StringPot(
-  KNEE_SENSOR_PIN, adc, ADC_0,
-  9472, 59776,  //592, 3736
-  KNEE_CYLINDER_MIN_LENGTH, KNEE_CYLINDER_MAX_LENGTH);
-
-//StringPot* compliant_pot = new StringPot(
-//  COMPLIANT_SENSOR_PIN, adc, ADC_0,
-//  0, 65535,
-//  ,);
-
-Angle3D joint_angles;
-Point3D foot_position;
-
-JointAngleTransform* hip_joint = new JointAngleTransform(
-  HIP_A, HIP_B, HIP_ZERO_ANGLE);
-
-JointAngleTransform* thigh_joint = new JointAngleTransform(
-  THIGH_A, THIGH_B, THIGH_ZERO_ANGLE);
-
-JointAngleTransform* knee_joint = new JointAngleTransform(
-  KNEE_A, KNEE_B, KNEE_ZERO_ANGLE);
-
-Kinematics* kinematics = new Kinematics(false);
-
-
-void setup() {
-  // setup adcs with 8x averaging 12 bit resolution
-  adc->setAveraging(8, ADC_0);
-  adc->setResolution(16, ADC_0);
-  adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_LOW_SPEED, ADC_0);
-  adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_LOW_SPEED, ADC_0);
-  
-  adc->setAveraging(8, ADC_1);
-  adc->setResolution(16, ADC_1);
-  adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_LOW_SPEED, ADC_1);
-  adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_LOW_SPEED, ADC_1);
-}
-
-void loop() {
-  // read pots
-  hip_pot->read_length();
-  thigh_pot->read_length();
-  knee_pot->read_length();
-
-  joint_angles.hip = hip_joint->length_to_angle(hip_pot->get_length());
-  joint_angles.thigh = thigh_joint->length_to_angle(thigh_pot->get_length());
-  joint_angles.knee = knee_joint->length_to_angle(knee_pot->get_length());
-
-  kinematics->angles_to_xyz(joint_angles, &foot_position);
-
-  #ifdef PLOT_VALUES
-  // report adc value
-  Serial.print(hip_pot->get_adc_value()); Serial.print(", ");
-  Serial.print(thigh_pot->get_adc_value()); Serial.print(", ");
-  Serial.print(knee_pot->get_adc_value()); Serial.print(", ");
-  #endif
-  #ifdef PLOT_POTS
-  // report cylinder lengths
-  Serial.print(hip_pot->get_length()); Serial.print(", ");
-  Serial.print(thigh_pot->get_length()); Serial.print(", ");
-  Serial.print(knee_pot->get_length()); Serial.print(", ");
-  #endif
-  #ifdef PLOT_ANGLES
-  // report joint angles
-  Serial.print(joint_angles.hip); Serial.print(", ");
-  Serial.print(joint_angles.thigh); Serial.print(", ");
-  Serial.print(joint_angles.knee); Serial.print(", ");
-  #endif
-  #ifdef PLOT_XYZ
-  // report xyz
-  Serial.print(foot_position.x); Serial.print(", ");
-  Serial.print(foot_position.y); Serial.print(", ");
-  Serial.print(foot_position.z); Serial.print(", ");
-  #endif
-  Serial.println();
+void loop(){
+  if (Serial.available()) {
+    byte c = Serial.read();
+    if ((c != '\r') && (c != '\n')) {
+      to_print = c;
+    };
+  };
+  leg->update();
+  leg->compute_foot_position();
+  float a, b, c;
+  switch (to_print) {
+    case 'v':
+      a = leg->hip_pot->get_adc_value();
+      b = leg->thigh_pot->get_adc_value();
+      c = leg->knee_pot->get_adc_value();
+      break;
+    case 'l':
+      a = leg->hip_pot->get_length();
+      b = leg->thigh_pot->get_length();
+      c = leg->knee_pot->get_length();
+      break;
+    case 'a':
+      a = leg->joint_angles.hip;
+      b = leg->joint_angles.thigh;
+      c = leg->joint_angles.knee;
+      break;
+    case 'x':
+      a = leg->foot_position.x;
+      b = leg->foot_position.y;
+      c = leg->foot_position.z;
+      break;
+    default:
+      a = 0; b = 0; c = 0;
+      break;
+  };
+  Serial.print(a); Serial.print(", ");
+  Serial.print(b); Serial.print(", ");
+  Serial.print(c); Serial.println();
   delay(100);
-}
+};

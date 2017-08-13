@@ -21,9 +21,9 @@
 
 class Valve {
   public:
-    Valve(int extendPin, int retractPin, int enablePin, float frequency, int resolution);
-    Valve(int extendPin, int retractPin, int enablePin, float frequency);
-    Valve(int extendPin, int retractPin, int enablePin);
+    Valve(int extendPin, int retractPin, int enablePin, int disablePin, float frequency, int resolution);
+    Valve(int extendPin, int retractPin, int enablePin, int disablePin, float frequency);
+    Valve(int extendPin, int retractPin, int enablePin, int disablePin);
     void enable();
     void disable();
 
@@ -65,6 +65,7 @@ class Valve {
     int _extendPin;
     int _retractPin;
     int _enablePin;
+    int _disablePin;
 
     int _extend_pwm_min;
     int _extend_pwm_max;

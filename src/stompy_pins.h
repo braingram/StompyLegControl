@@ -24,6 +24,8 @@
 #define PRESSURE_SENSOR_MANIFOLD A13  // ADC0/ADC1
 #endif
 
+#define DISABLE_PIN 1
+
 #define KNEE_SENSOR_PIN		15  // ADC0
 #define THIGH_SENSOR_PIN	17  // ADC0/1
 #define HIP_SENSOR_PIN		20  // ADC0

@@ -60,6 +60,10 @@ class StringPot : public AnalogSensor {
     float adc_value_to_length(unsigned int adc_value);
     unsigned int length_to_adc_value(float length);
 
+    void set_adc_min(float value);
+    void set_adc_max(float value);
+    void set_adc_range(float min_value, float max_value);
+
   protected:
     Transform* _transform;
     float _length;

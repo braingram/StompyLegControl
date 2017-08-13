@@ -1,6 +1,6 @@
 #include "valve.h"
 
-Valve::Valve(int extendPin, int retractPin, int enablePin, float frequency, int resolution) {
+Valve::Valve(int extendPin, int retractPin, int enablePin, int disablePin, float frequency, int resolution) {
   // store state
   _pwm = 0;
   _direction = 0;
@@ -9,6 +9,7 @@ Valve::Valve(int extendPin, int retractPin, int enablePin, float frequency, int 
   _extendPin = extendPin;
   _retractPin = retractPin;
   _enablePin = enablePin;
+  _disablePin = disablePin;
 
   // compute max by resolution
   set_pwm_limits(0, (1 << resolution) - 1, 0, (1 << resolution) - 1);
@@ -18,16 +19,17 @@ Valve::Valve(int extendPin, int retractPin, int enablePin, float frequency, int 
   analogWriteFrequency(_retractPin, frequency);
   analogWriteResolution(resolution);
   pinMode(_enablePin, OUTPUT);
+  pinMode(_disablePin, OUTPUT);
 
   // as a default, disable
   disable();
 }
 
 
-Valve::Valve(int extendPin, int retractPin, int enablePin, float frequency) : Valve(extendPin, retractPin, enablePin, frequency, VALVE_PWM_RESOLUTION) {
+Valve::Valve(int extendPin, int retractPin, int enablePin, int disablePin, float frequency) : Valve(extendPin, retractPin, enablePin, disablePin, frequency, VALVE_PWM_RESOLUTION) {
 }
 
-Valve::Valve(int extendPin, int retractPin, int enablePin) : Valve(extendPin, retractPin, enablePin, VALVE_PWM_FREQUENCY, VALVE_PWM_RESOLUTION) {
+Valve::Valve(int extendPin, int retractPin, int enablePin, int disablePin) : Valve(extendPin, retractPin, enablePin, disablePin, VALVE_PWM_FREQUENCY, VALVE_PWM_RESOLUTION) {
 }
 
 void Valve::stop() {
@@ -124,6 +126,7 @@ void Valve::retract_ratio(float ratio) {
 }
 
 void Valve::enable() {
+  digitalWrite(_disablePin, LOW);
   digitalWrite(_enablePin, HIGH);
   _enabled = true;
 }
@@ -131,6 +134,7 @@ void Valve::enable() {
 void Valve::disable() {
   stop();
   digitalWrite(_enablePin, LOW);
+  digitalWrite(_disablePin, HIGH);
   _enabled = false;
 }
 

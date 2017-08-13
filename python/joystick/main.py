@@ -40,16 +40,17 @@ pygame.init()
 myfont = pygame.font.SysFont('ubuntu', 18)
 
 if pygame.joystick.get_count() < 1:
-    raise IOError("No joysticks found")
-j = pygame.joystick.Joystick(0)
-j.init()
+    j = None
+else:
+    j = pygame.joystick.Joystick(0)
+    j.init()
 
 w, h = (640, 480)
 hs = h / 65535.
 npts = 200
 
-mode = 'pwm'
-#mode = 'plan'
+#mode = 'pwm'
+mode = 'plan'
 #mode = 'target'
 
 jmap = {
@@ -60,6 +61,7 @@ jmap = {
 screen = pygame.display.set_mode((w, h))
 delay = 0.010  # s
 mini_delay = 1  # ms
+pwms = [0, 0, 0]
 
 ns.heartbeat()
 last_heartbeat = time.time()
@@ -87,7 +89,7 @@ def on_adc(hip, thigh, knee):
 
 
 def on_pwm_value(hip, thigh, knee):
-    #print("PWM", hip, thigh, knee)
+    print("PWM", hip, thigh, knee)
     lf(
         'pwm', start_time - time.time(),
         hip.value, thigh.value, knee.value)
@@ -95,7 +97,7 @@ def on_pwm_value(hip, thigh, knee):
 
 
 def on_pid(hip, thigh, knee):
-    #print("PID", hip, thigh, knee)
+    print("PID", hip, thigh, knee)
     pass
 
 
@@ -113,6 +115,29 @@ if mode == 'pwm':
 else:
     ns.enable_pid(True)
 
+
+def move(axis, speed):
+    if mode == 'pwm':
+        pwms[axis] = speed / 65535.
+        print("sending pwms: %s" % (pwms, ))
+        ns.pwm(*pwms)
+    else:
+        p = [0, 0, 0., 0., 0., 0., 0., 0., 0.]
+        if speed != 0:
+            p[0] = 1  # velocity mode
+            if speed > 0:
+                p[axis + 2] = 1.
+            elif speed < 0:
+                p[axis + 2] = -1.
+            p[-1] = abs(speed)
+        print("sending plan: %s" % (p, ))
+        ns.plan(*p)
+
+
+def stop():
+    ns.plan(0, 0, 0., 0., 0., 0., 0., 0., 0.)
+
+
 last_update = time.time() - delay
 while True:
     if (time.time() - last_heartbeat > 0.5):
@@ -127,7 +152,45 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-        elif event.type == pygame.JOYAXISMOTION:
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                ns.estop(0)
+            elif event.key == pygame.K_q:
+                move(0, 65535)
+            elif event.key == pygame.K_w:
+                move(1, 65535)
+            elif event.key == pygame.K_e:
+                move(2, 65535)
+            elif event.key == pygame.K_a:
+                move(0, -65535)
+            elif event.key == pygame.K_s:
+                move(1, -65535)
+            elif event.key == pygame.K_d:
+                move(2, -65535)
+            elif event.key == pygame.K_z and mode == 'plan':
+                ns.plan(1, 0, 0.5, 0., -0.5, 0., 0., 0., 32767)
+            elif event.key == pygame.K_x and mode == 'plan':
+                ns.plan(1, 0, -0.5, 0., 0.5, 0., 0., 0., 32767)
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_SPACE:
+                ns.estop(1)
+            elif event.key == pygame.K_q:
+                move(0, 0)
+            elif event.key == pygame.K_w:
+                move(1, 0)
+            elif event.key == pygame.K_e:
+                move(2, 0)
+            elif event.key == pygame.K_a:
+                move(0, 0)
+            elif event.key == pygame.K_s:
+                move(1, 0)
+            elif event.key == pygame.K_d:
+                move(2, 0)
+            elif event.key == pygame.K_z and mode == 'plan':
+                stop()
+            elif event.key == pygame.K_x and mode == 'plan':
+                stop()
+        elif j is not None and event.type == pygame.JOYAXISMOTION:
             #print event
             if mode == 'plan':
                 if event.axis == 2:
@@ -161,11 +224,12 @@ while True:
                 kpwm = jmap[2](x, y, z)
                 print('pwm', hpwm, tpwm, kpwm)
                 ns.pwm(hpwm, tpwm, kpwm)
-        elif event.type == pygame.JOYBUTTONDOWN:
-            #print event
+        elif j is not None and event.type == pygame.JOYBUTTONDOWN:
+            print event
             if event.button == 1:
                 ns.estop(0)
-        elif event.type == pygame.JOYBUTTONUP:
+            pass
+        elif j is not None and event.type == pygame.JOYBUTTONUP:
             if event.button == 1:
                 ns.estop(1)
     if len(pots) > npts:
