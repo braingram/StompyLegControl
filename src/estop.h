@@ -48,11 +48,14 @@ class EStop {
     byte set_estop(byte severity);
     byte get_estop();
     bool is_stopped();
+    bool just_stopped();
+    bool just_released();
 
     void set_heartbeat();
   private:
     unsigned long _last_beat_time;
     byte _estop;
+    byte _last_estop;
 };
 
 #endif

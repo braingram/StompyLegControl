@@ -106,6 +106,14 @@ void Leg::update() {
   // TODO check if this leg has a loaded calibration
 
   // if estop is active, disable all valves
+  // need to get estop rising edges and falling edges
+  if (estop->just_released()) {
+    // reset pid values, set targets to current sensor values
+    hold_position();
+    hip_pid->reset();
+    thigh_pid->reset();
+    knee_pid->reset();
+  };
   if ((estop->is_stopped()) | (leg_number == LEG_NUMBER::UNDEFINED)) {
     disable_valves();
     hip_pid->reset();
