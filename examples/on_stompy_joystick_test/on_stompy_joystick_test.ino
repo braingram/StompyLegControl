@@ -18,7 +18,9 @@ elapsedMillis adc_timer;
 #define CMD_PID_OUTPUT 6
 #define CMD_PLAN 7
 #define CMD_ENABLE_PID 8
-//#define CMD_XYZ_VALUE 9
+#define CMD_XYZ_VALUE 9
+#define CMD_ANGLES 10
+#define CMD_SET_PID 11
 
 void on_estop(CommandProtocol *cmd){
   byte severity = ESTOP_DEFAULT;
@@ -30,6 +32,9 @@ void on_estop(CommandProtocol *cmd){
 
 void on_heartbeat(CommandProtocol *cmd) {
   leg->estop->set_heartbeat();
+  // send heartbeat back
+  cmd->start_command(CMD_HEARTBEAT);
+  cmd->finish_command();
 };
 
 void on_pwm(CommandProtocol *cmd) {
@@ -122,6 +127,44 @@ void on_enable_pid(CommandProtocol *cmd) {
   };
 }
 
+void on_set_pid(CommandProtocol *cmd) {
+    // joint [0:hip, 1:thigh, 2:knee]
+    // p,i,d,min_value,max_value
+    if (!cmd->has_arg()) return;
+    byte ji = cmd->get_arg<byte>();
+    if (ji > 2) return;
+    if (!cmd->has_arg()) return;
+    float p = cmd->get_arg<float>();
+    if (!cmd->has_arg()) return;
+    float i = cmd->get_arg<float>();
+    if (!cmd->has_arg()) return;
+    float d = cmd->get_arg<float>();
+    if (!cmd->has_arg()) return;
+    float mino = cmd->get_arg<float>();
+    if (!cmd->has_arg()) return;
+    float maxo = cmd->get_arg<float>();
+    if (maxo <= mino) return;
+    PID* pid;
+    switch (ji) {
+        case 0:
+            pid = leg->hip_pid;
+            break;
+        case 1:
+            pid = leg->thigh_pid;
+            break;
+        case 2:
+            pid = leg->knee_pid;
+            break;
+    }
+    // disable pid (estop?)
+    leg->disable_pids();
+    // set values
+    pid->set_p(p); pid->set_i(i); pid->set_d(d);
+    pid->set_output_limits(mino, maxo);
+    pid->reset();
+    // re-enable pid? need to do this outside the loop
+};
+
 void setup(){
   Serial.begin(9600);
   leg->set_leg_number(LEG_NUMBER::FR);
@@ -133,6 +176,7 @@ void setup(){
   cmd.register_callback(CMD_ADC_TARGET, on_adc_target);
   cmd.register_callback(CMD_PLAN, on_plan);
   cmd.register_callback(CMD_ENABLE_PID, on_enable_pid);
+  cmd.register_callback(CMD_SET_PID, on_set_pid);
 }
 
 void loop() {
@@ -144,12 +188,11 @@ void loop() {
     cmd.add_arg(leg->thigh_pot->get_adc_value());
     cmd.add_arg(leg->knee_pot->get_adc_value());
     cmd.finish_command();
+
     cmd.start_command(CMD_PID_OUTPUT);
-    
     cmd.add_arg(leg->hip_joint->get_pid_output());
     cmd.add_arg(leg->thigh_joint->get_pid_output());
     cmd.add_arg(leg->knee_joint->get_pid_output());
-    
     /*
     cmd.add_arg(leg->hip_pid->get_output());
     cmd.add_arg(leg->thigh_pid->get_output());
@@ -166,18 +209,27 @@ void loop() {
     cmd.add_arg(leg->knee_pid->get_setpoint());
     */
     cmd.finish_command();
+
     cmd.start_command(CMD_PWM_VALUE);
     cmd.add_arg(leg->hip_valve->get_pwm());
     cmd.add_arg(leg->thigh_valve->get_pwm());
     cmd.add_arg(leg->knee_valve->get_pwm());
     cmd.finish_command();
-    /*
+
+    leg->compute_foot_position();
+    // angles
+    cmd.start_command(CMD_ANGLES);
+    cmd.add_arg(leg->joint_angles.hip);
+    cmd.add_arg(leg->joint_angles.thigh);
+    cmd.add_arg(leg->joint_angles.knee);
+    cmd.finish_command();
+
     cmd.start_command(CMD_XYZ_VALUE);
     cmd.add_arg(leg->foot_position.x);
     cmd.add_arg(leg->foot_position.y);
     cmd.add_arg(leg->foot_position.z);
     cmd.finish_command();
-    */
+
     adc_timer = 0;
   }
 }
