@@ -226,7 +226,11 @@ class PIDFrame(object):
 
 
 if __name__ == '__main__':
-    com = pycomando.Comando(serial.Serial('/dev/ttyACM0', 9600))
+    if len(sys.argv) > 1:
+        port = sys.args[1]
+    else:
+        port = '/dev/ttyACM0'
+    com = pycomando.Comando(serial.Serial(port, 9600))
     cmd = pycomando.protocols.command.CommandProtocol()
     com.register_protocol(0, cmd)
     mgr = pycomando.protocols.command.EventManager(cmd, cmds)
