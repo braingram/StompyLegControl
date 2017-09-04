@@ -227,7 +227,7 @@ class PIDFrame(object):
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        port = sys.args[1]
+        port = sys.argv[1]
     else:
         port = '/dev/ttyACM0'
     com = pycomando.Comando(serial.Serial(port, 9600))
