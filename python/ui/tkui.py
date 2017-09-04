@@ -25,6 +25,9 @@ import serial
 
 import pycomando
 
+# setting this to true sends plans in leg coordinates (multi-joint)
+# if this is false, plans will be in sensor coordinates (single joint)
+leg_coords = True
 log_data = True
 
 log_filename = None
@@ -233,7 +236,10 @@ if __name__ == '__main__':
     def send_plan(axis, speed):
         if axis < 0 or axis > 2:
             return
-        p = [0, 0, 0., 0., 0., 0., 0., 0., 0.]
+        if leg_coords:
+            p = [0, 2, 0., 0., 0., 0., 0., 0., 0.]
+        else:
+            p = [0, 0, 0., 0., 0., 0., 0., 0., 0.]
         if speed != 0:
             p[0] = 1  # velocity mode
             if speed > 0:
@@ -331,6 +337,9 @@ if __name__ == '__main__':
 
     root.bind("<KeyPress-Control_L>", lambda e: estop.set(False))
     root.bind("<KeyRelease-Control_L>", lambda e: estop.set(True))
+    # fuck steve jobs
+    root.bind("<KeyPress-Left>", lambda e: estop.set(False))
+    root.bind("<KeyRelease-Left>", lambda e: estop.set(True))
     root.bind("<FocusOut>", lambda e: estop.set(True))
 
     def keypress(event):
