@@ -198,16 +198,14 @@ void loop() {
     cmd.add_arg(leg->thigh_pid->get_output());
     cmd.add_arg(leg->knee_pid->get_output());
     */
-    /*
-    cmd.add_arg(leg->hip_pid->get_error());
-    cmd.add_arg(leg->thigh_pid->get_error());
-    cmd.add_arg(leg->knee_pid->get_error());
-    */
-    /*
     cmd.add_arg(leg->hip_pid->get_setpoint());
     cmd.add_arg(leg->thigh_pid->get_setpoint());
     cmd.add_arg(leg->knee_pid->get_setpoint());
-    */
+
+    cmd.add_arg(leg->hip_pid->get_error());
+    cmd.add_arg(leg->thigh_pid->get_error());
+    cmd.add_arg(leg->knee_pid->get_error());
+
     cmd.finish_command();
 
     cmd.start_command(CMD_PWM_VALUE);

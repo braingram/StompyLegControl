@@ -50,11 +50,11 @@ cmds = {
     3: 'adc=uint32,uint32,uint32',
     4: 'adc_target(uint32,uint32,uint32)',
     5: 'pwm_value=int32,int32,int32',
-    6: 'pid=float,float,float',
+    6: 'pid=float,float,float,float,float,float,float,float,float',
     #7: 'plan(byte,byte,float,float,float,float,float,float,float,uint32)',
     7: 'plan(byte,byte,float,float,float,float,float,float,float)',
     8: 'enable_pid(bool)',
-    9: 'xyz_value=float,float,float',
+    9: 'xyz_values=float,float,float',
     10: 'angles=float,float,float',
     11: 'set_pid(byte,float,float,float,float,float)',
 }
@@ -245,6 +245,10 @@ if __name__ == '__main__':
         lf('plan', *p)
         ns.plan(*p)
 
+    def stop():
+        p = [0, 0, 0., 0., 0., 0., 0., 0., 0.]
+        ns.plan(*p)
+
     root = tk.Tk()
 
     root.wm_title('leg name here [estop setting]')
@@ -253,35 +257,6 @@ if __name__ == '__main__':
     # estop [button]
     estop = tk.BooleanVar()
     estop.set(True)
-
-    root.bind("<KeyPress-Control_L>", lambda e: estop.set(False))
-    root.bind("<KeyRelease-Control_L>", lambda e: estop.set(True))
-    root.bind("<FocusOut>", lambda e: estop.set(True))
-
-    def keypress(event):
-        #print(vars(event))
-        c = event.keysym.lower()
-        if c in 'uio':
-            a = 'uio'.index(c)
-            d = 1.
-        elif c in 'jkl':
-            a = 'jkl'.index(c)
-            d = -1.
-        else:
-            return
-        sd = bool(event.state & 0x001)  # check shift
-        if sd:
-            s = 30000
-        else:
-            s = 15000
-        send_plan(a, s * d)
-
-    def keyrelease(event):
-        if event.keysym.lower() in 'uiojkl':  # hip, thigh, knee
-            send_plan(0, 0)  # send stop
-
-    root.bind("<KeyPress>", keypress)
-    root.bind("<KeyRelease>", keyrelease)
 
     def estop_changed(*args):
         if estop.get():
@@ -318,17 +293,17 @@ if __name__ == '__main__':
     legname_title.pack(side=tk.LEFT)
     legname_label.pack(side=tk.LEFT)
     foot_frame = tk.Frame(root)
-    fx = tk.DoubleVar()
+    fx = tk.StringVar()
     fx_title = tk.Label(foot_frame, text="X:")
     fx_label = tk.Label(foot_frame, textvariable=fx)
     fx_title.pack(side=tk.LEFT)
     fx_label.pack(side=tk.LEFT)
-    fy = tk.DoubleVar()
+    fy = tk.StringVar()
     fy_title = tk.Label(foot_frame, text="Y:")
     fy_label = tk.Label(foot_frame, textvariable=fy)
     fy_title.pack(side=tk.LEFT)
     fy_label.pack(side=tk.LEFT)
-    fz = tk.DoubleVar()
+    fz = tk.StringVar()
     fz_title = tk.Label(foot_frame, text="Z:")
     fz_label = tk.Label(foot_frame, textvariable=fz)
     fz_title.pack(side=tk.LEFT)
@@ -346,6 +321,65 @@ if __name__ == '__main__':
     thigh_pid_frame = PIDFrame(root, "THIGH", set_pid)
     knee_pid_frame = PIDFrame(root, "KNEE", set_pid)
     # TODO calibration settings
+    speed_frame = tk.Frame(root)
+    tk.Label(speed_frame, text="Speed: ").pack(side=tk.LEFT)
+    speed = tk.Entry(speed_frame)
+    speed.delete(0, tk.END)
+    speed.insert(0, "1500")
+    speed.pack(side=tk.LEFT)
+    speed_frame.pack(side=tk.TOP)
+
+    root.bind("<KeyPress-Control_L>", lambda e: estop.set(False))
+    root.bind("<KeyRelease-Control_L>", lambda e: estop.set(True))
+    root.bind("<FocusOut>", lambda e: estop.set(True))
+
+    def keypress(event):
+        #print(vars(event))
+        c = event.keysym.lower()
+        if c in '1234567890':
+            print("execute canned motion")
+            s = float(speed.get())
+            if c == '1':
+                # move +x
+                a = 0
+            elif c == '2':
+                a = 0
+                s *= -1.0
+            elif c == '3':
+                a = 1
+            elif c == '4':
+                a = 1
+                s *= -1.0
+            elif c == '5':
+                a = 2
+            elif c == '6':
+                a = 2
+                s *= -1.0
+            else:
+                return
+            send_plan(a, s)
+            root.after(5000, stop)
+            return
+        if c in 'rty':  # hip thigh knee forward
+            a = 'rty'.index(c)
+            d = 1.
+        elif c in 'fgh':  # hip thigh knee backward
+            a = 'fgh'.index(c)
+            d = -1.
+        else:
+            return
+        sd = bool(event.state & 0x001)  # check shift
+        s = float(speed.get())
+        if sd:
+            s *= 2.0
+        send_plan(a, s * d)
+
+    def keyrelease(event):
+        if event.keysym.lower() in 'rtyfgh':  # hip, thigh, knee
+            send_plan(0, 0)  # send stop
+
+    root.bind("<KeyPress>", keypress)
+    root.bind("<KeyRelease>", keyrelease)
 
     def on_adc(hip, thigh, knee):
         h = hip.value
@@ -356,6 +390,12 @@ if __name__ == '__main__':
         tadc.var.set(t)
         kadc.var.set(k)
         # TODO calf
+
+    def on_pid(ho, to, ko, hs, ts, ks, he, te, ke):
+        lf(
+            "pid", ho.value, to.value, ko.value,
+            hs.value, ts.value, ks.value,
+            he.value, te.value, ke.value)
 
     def on_angles(hip, thigh, knee):
         hip = hip.value
@@ -370,9 +410,9 @@ if __name__ == '__main__':
         y = y.value
         z = z.value
         lf("xyz", x, y, z)
-        fx.set(x)
-        fy.set(y)
-        fz.set(z)
+        fx.set('%03.2f' % x)
+        fy.set('%03.2f' % y)
+        fz.set('%03.2f' % z)
 
     def on_estop(estop):
         # TODO estop
