@@ -335,7 +335,10 @@ if __name__ == '__main__':
     tk.Label(speed_frame, text="Speed: ").pack(side=tk.LEFT)
     speed = tk.Entry(speed_frame)
     speed.delete(0, tk.END)
-    speed.insert(0, "1500")
+    if leg_coords:
+        speed.insert(0, "1.5")
+    else:
+        speed.insert(0, "1500")
     speed.pack(side=tk.LEFT)
     speed_frame.pack(side=tk.TOP)
 
@@ -436,6 +439,7 @@ if __name__ == '__main__':
 
     mgr.on('heartbeat', on_heartbeat)
     mgr.on('adc', on_adc)
+    mgr.on('pid', on_pid)
     mgr.on('angles', on_angles)
     mgr.on('xyz_values', on_xyz_values)
 
