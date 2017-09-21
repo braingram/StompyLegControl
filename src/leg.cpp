@@ -9,13 +9,13 @@ Leg::Leg() {
   adc = new ADC();
   adc->setAveraging(ADC_N_AVG, ADC_0);
   adc->setResolution(ADC_RES, ADC_0);
-  adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_LOW_SPEED, ADC_0);
-  adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_LOW_SPEED, ADC_0);
+  adc->setConversionSpeed(ADC_CONV_SPEED, ADC_0);
+  adc->setSamplingSpeed(ADC_SAMP_SPEED, ADC_0);
   
   adc->setAveraging(ADC_N_AVG, ADC_1);
   adc->setResolution(ADC_RES, ADC_1);
-  adc->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_LOW_SPEED, ADC_1);
-  adc->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_LOW_SPEED, ADC_1);
+  adc->setConversionSpeed(ADC_CONV_SPEED, ADC_1);
+  adc->setSamplingSpeed(ADC_SAMP_SPEED, ADC_1);
 
 
   hip_pot = new StringPot(

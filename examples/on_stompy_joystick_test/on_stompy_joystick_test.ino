@@ -21,6 +21,7 @@ elapsedMillis adc_timer;
 #define CMD_XYZ_VALUE 9
 #define CMD_ANGLES 10
 #define CMD_SET_PID 11
+#define CMD_LOOP_TIME 12
 
 void on_estop(CommandProtocol *cmd){
   byte severity = ESTOP_DEFAULT;
@@ -181,8 +182,14 @@ void setup(){
 
 void loop() {
   com.handle_stream();
+  unsigned long t0 = micros();
   leg->update();
+  t0 = micros() - t0;
   if (adc_timer > ADC_REPORT_TIME) {
+    cmd.start_command(CMD_LOOP_TIME);
+    cmd.add_arg(t0);
+    cmd.finish_command();
+    
     cmd.start_command(CMD_ADC_VALUE);
     cmd.add_arg(leg->hip_pot->get_adc_value());
     cmd.add_arg(leg->thigh_pot->get_adc_value());

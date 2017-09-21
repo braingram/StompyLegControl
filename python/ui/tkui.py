@@ -60,6 +60,7 @@ cmds = {
     9: 'xyz_values=float,float,float',
     10: 'angles=float,float,float',
     11: 'set_pid(byte,float,float,float,float,float)',
+    12: 'loop_time=uint32',
 }
 
 
@@ -407,6 +408,15 @@ if __name__ == '__main__':
         kadc.var.set(k)
         # TODO calf
 
+    global max_loop_time
+    max_loop_time = 0
+
+    def on_loop_time(t0):
+        global max_loop_time
+        if t0.value > max_loop_time:
+            max_loop_time = t0.value
+        print("Loop time (us): %s[%s]" % (t0.value, max_loop_time))
+
     def on_pid(ho, to, ko, hs, ts, ks, he, te, ke):
         lf(
             "pid", ho.value, to.value, ko.value,
@@ -439,6 +449,7 @@ if __name__ == '__main__':
 
     mgr.on('heartbeat', on_heartbeat)
     mgr.on('adc', on_adc)
+    mgr.on('loop_time', on_loop_time)
     mgr.on('pid', on_pid)
     mgr.on('angles', on_angles)
     mgr.on('xyz_values', on_xyz_values)

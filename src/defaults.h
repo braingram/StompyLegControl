@@ -1,8 +1,10 @@
 #ifndef DEFAULTS_H
 #define DEFAULTS_H
 
-#define ADC_N_AVG 8
+#define ADC_N_AVG 16
 #define ADC_RES 16
+#define ADC_CONV_SPEED ADC_CONVERSION_SPEED::HIGH_SPEED_16BITS
+#define ADC_SAMP_SPEED ADC_SAMPLING_SPEED::HIGH_SPEED
 
 // === PWM values ===
 // assumes PWM_RES of 13
