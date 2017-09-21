@@ -24,6 +24,49 @@ unsigned int AnalogSensor::get_adc_value() {
 
 
 /* ========================================================
+ *                FilteredAnalogSensor
+ * ========================================================*/
+FilteredAnalogSensor::FilteredAnalogSensor(int pin, ADC* adc, int adc_number) {
+  _adc = adc;
+  _adc_number = adc_number;
+  _pin = pin;
+
+  // initialize adc
+  unsigned int v = _adc->analogRead(_pin, _adc_number);
+  for (int i=0; i<N_FILTER_SAMPLES; i++) {
+    _samples[i] = v;
+  };
+  _sample_index = 0;
+}
+
+void FilteredAnalogSensor::sample() {
+  _samples[_sample_index] = _adc->analogRead(_pin, _adc_number);
+  _sample_index = (_sample_index + 1) % N_FILTER_SAMPLES;
+}
+
+int filter_sort(const void *a, const void *b) {
+  return *((int *)a) - *((int *)b);
+}
+
+void FilteredAnalogSensor::filter() {
+  qsort(_samples, N_FILTER_SAMPLES, sizeof(int), filter_sort);
+  long s = 0;
+  for (int i=FILTER_MIN_INDEX; i<=FILTER_MAX_INDEX; i++) {
+    s += _samples[i];
+  }
+  _adc_value = (s / FILTER_AVG_N);
+}
+
+unsigned int FilteredAnalogSensor::read_adc() {
+  filter();
+  return get_adc_value();
+}
+  
+unsigned int FilteredAnalogSensor::get_adc_value() {
+  return _adc_value;
+}
+
+/* ========================================================
  *                      StringPot
  * ========================================================*/
 

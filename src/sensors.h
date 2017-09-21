@@ -19,6 +19,13 @@
 #include <ADC.h>
 #include "transforms.h"
 
+// filter 10 most recent adc samples
+#define N_FILTER_SAMPLES 10
+// start averaging at min, stop at max
+#define FILTER_MIN_INDEX 3
+#define FILTER_MAX_INDEX 6
+#define FILTER_AVG_N 4
+
 /* ========================================================
  *                      Analog Sensor
  * A class to handle reading a sensor value from an adc instance
@@ -39,6 +46,34 @@ class AnalogSensor {
     ADC* _adc;
     int _adc_number;
     int _pin;
+};
+
+
+/* ========================================================
+ *                 Filtered Analog Sensor
+ * ========================================================*/
+
+class FilteredAnalogSensor {
+  public:
+    FilteredAnalogSensor(int pin, ADC* adc, int adc_number);
+
+    void sample();  // take a raw sample of the current voltage
+    void filter();  // filter all current samples
+
+    unsigned int read_adc();  // filter samples and return value
+
+    unsigned int get_adc_value();  // return pre-filtered value
+
+  protected:
+    unsigned int _adc_value;
+
+  private:
+    ADC* _adc;
+    int _adc_number;
+    int _pin;
+
+    int _samples[N_FILTER_SAMPLES];
+    int _sample_index;
 };
 
 
