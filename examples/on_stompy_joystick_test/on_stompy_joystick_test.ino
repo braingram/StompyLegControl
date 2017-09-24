@@ -191,9 +191,9 @@ void loop() {
     cmd.finish_command();
     
     cmd.start_command(CMD_ADC_VALUE);
-    cmd.add_arg(leg->hip_pot->get_adc_value());
-    cmd.add_arg(leg->thigh_pot->get_adc_value());
-    cmd.add_arg(leg->knee_pot->get_adc_value());
+    cmd.add_arg(leg->hip_analog_sensor->get_adc_value());
+    cmd.add_arg(leg->thigh_analog_sensor->get_adc_value());
+    cmd.add_arg(leg->knee_analog_sensor->get_adc_value());
     cmd.finish_command();
 
     cmd.start_command(CMD_PID_OUTPUT);

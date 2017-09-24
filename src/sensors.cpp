@@ -26,7 +26,7 @@ unsigned int AnalogSensor::get_adc_value() {
 /* ========================================================
  *                FilteredAnalogSensor
  * ========================================================*/
-FilteredAnalogSensor::FilteredAnalogSensor(int pin, ADC* adc, int adc_number) {
+FilteredAnalogSensor::FilteredAnalogSensor(int pin, ADC* adc, int adc_number):AnalogSensor(pin, adc, adc_number) {
   _adc = adc;
   _adc_number = adc_number;
   _pin = pin;
@@ -37,6 +37,7 @@ FilteredAnalogSensor::FilteredAnalogSensor(int pin, ADC* adc, int adc_number) {
     _samples[i] = v;
   };
   _sample_index = 0;
+  _adc_value = v;
 }
 
 void FilteredAnalogSensor::sample() {
@@ -70,21 +71,31 @@ unsigned int FilteredAnalogSensor::get_adc_value() {
  *                      StringPot
  * ========================================================*/
 
-StringPot::StringPot(int pin, ADC* adc, int adc_number, Transform* transform) : AnalogSensor(pin, adc, adc_number) {
+StringPot::StringPot(FilteredAnalogSensor* analog_sensor, Transform* transform) {
+  _analog_sensor = analog_sensor;
   _transform = transform;
 }
 
-StringPot::StringPot(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_max, float length_min, float length_max) : AnalogSensor(pin, adc, adc_number) {
+StringPot::StringPot(FilteredAnalogSensor* analog_sensor, unsigned int adc_min, unsigned int adc_max, float length_min, float length_max) {
+  _analog_sensor = analog_sensor;
   _transform = new LinearTransform(adc_min, adc_max, length_min, length_max);
 }
 
 float StringPot::read_length() {
-  read_adc();
+  _analog_sensor->read_adc();
   return get_length();
 }
 
+unsigned int StringPot::read_adc() {
+  return _analog_sensor->read_adc();
+}
+
 float StringPot::get_length() {
-  return adc_value_to_length(_adc_value);
+  return adc_value_to_length(_analog_sensor->get_adc_value());
+}
+
+unsigned int StringPot::get_adc_value() {
+  return _analog_sensor->get_adc_value();
 }
 
 float StringPot::adc_value_to_length(unsigned int adc_value) {
@@ -108,11 +119,23 @@ void StringPot::set_adc_range(float min_value, float max_value) {
   set_adc_max(max_value);
 }
 
+int StringPot::update() {
+  if (_sample_timer > STRING_POT_SAMPLE_TIME) {
+    _analog_sensor->sample();
+    _sample_count = (_sample_count + 1) % N_FILTER_SAMPLES;
+    if (_sample_count == 0) {
+      _analog_sensor->filter();
+      return STRING_POT_READY;
+    };
+  };
+  return STRING_POT_NO_SAMPLE;
+}
+
 
 /* ========================================================
  *                   PressureSensor
  * ========================================================*/
-
+/*
 PressureSensor::PressureSensor(int pin, ADC* adc, int adc_number, Transform* transform) : AnalogSensor(pin, adc, adc_number) {
   _transform = transform;
 }
@@ -130,12 +153,12 @@ float PressureSensor::read_pressure() {
 float PressureSensor::get_pressure() {
   return _pressure;
 }
-
+*/
 
 /* ========================================================
  *                   JoystickAxis
  * ========================================================*/
-
+/*
 JoystickAxis::JoystickAxis(int pin, ADC* adc, int adc_number, Transform* transform) : AnalogSensor(pin, adc, adc_number) {
   _transform = transform;
 }
@@ -154,3 +177,4 @@ float JoystickAxis::read_axis() {
 float JoystickAxis::get_axis() {
   return _axis;
 }
+*/

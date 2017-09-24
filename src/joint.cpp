@@ -9,7 +9,7 @@ Joint::Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform,
   _min_pid_output = 0;
   disable_pid();
 
-  _pot->read_adc();
+  _pot->read_length();
   set_target_adc_value(_pot->get_adc_value());
 };
 
@@ -88,13 +88,18 @@ void Joint::_update_pid() {
 };
 
 void Joint::update() {
-  _pot->read_adc();
+  // read adc
+  int pot_ready = _pot->update();
+  //_pot->read_adc();
   // if live, 
   if (!_valve->get_enabled()) {
     _pid->reset();
     return;
   };
-  if (_use_pid) {
+  if (!_use_pid) {
+    return;
+  };
+  if (pot_ready == STRING_POT_READY) {
     _update_pid();
   };
 };

@@ -63,6 +63,11 @@ class Leg {
     EStop* estop;
     ADC* adc;
 
+    FilteredAnalogSensor* hip_analog_sensor;
+    FilteredAnalogSensor* thigh_analog_sensor;
+    FilteredAnalogSensor* knee_analog_sensor;
+    FilteredAnalogSensor* calf_analog_sensor;
+
     StringPot* hip_pot;
     StringPot* thigh_pot;
     StringPot* knee_pot;

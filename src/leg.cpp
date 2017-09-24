@@ -17,19 +17,27 @@ Leg::Leg() {
   adc->setConversionSpeed(ADC_CONV_SPEED, ADC_1);
   adc->setSamplingSpeed(ADC_SAMP_SPEED, ADC_1);
 
+  hip_analog_sensor = new FilteredAnalogSensor(
+    HIP_SENSOR_PIN, adc, ADC_0);
+  thigh_analog_sensor = new FilteredAnalogSensor(
+    THIGH_SENSOR_PIN, adc, ADC_1);
+  knee_analog_sensor = new FilteredAnalogSensor(
+    KNEE_SENSOR_PIN, adc, ADC_0);
+  calf_analog_sensor = new FilteredAnalogSensor(
+    CALF_SENSOR_PIN, adc, ADC_1);
 
   hip_pot = new StringPot(
-    HIP_SENSOR_PIN, adc, ADC_0,
+    hip_analog_sensor,
     HIP_ADC_MIN, HIP_ADC_MAX,
     HIP_CYLINDER_MIN_LENGTH, HIP_CYLINDER_MAX_LENGTH);
 
   thigh_pot = new StringPot(
-    THIGH_SENSOR_PIN, adc, ADC_1,
+    thigh_analog_sensor,
     THIGH_ADC_MIN, THIGH_ADC_MAX,
     THIGH_CYLINDER_MIN_LENGTH, THIGH_CYLINDER_MAX_LENGTH);
 
   knee_pot = new StringPot(
-    KNEE_SENSOR_PIN, adc, ADC_0,
+    knee_analog_sensor,
     KNEE_ADC_MIN, KNEE_ADC_MAX,
     KNEE_CYLINDER_MIN_LENGTH, KNEE_CYLINDER_MAX_LENGTH);
 

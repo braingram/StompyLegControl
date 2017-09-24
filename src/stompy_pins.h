@@ -29,7 +29,7 @@
 #define KNEE_SENSOR_PIN		15  // ADC0
 #define THIGH_SENSOR_PIN	17  // ADC0/1
 #define HIP_SENSOR_PIN		20  // ADC0
-#define COMPLIANT_SENSOR_PIN	16  // ADC0/1
+#define CALF_SENSOR_PIN	16  // ADC0/1
 
 //These are mapped to the right front leg
 #define THIGHPWM_DOWN_PIN	3

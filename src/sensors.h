@@ -26,6 +26,11 @@
 #define FILTER_MAX_INDEX 6
 #define FILTER_AVG_N 4
 
+#define STRING_POT_READY 1
+#define STRING_POT_NO_SAMPLE 0
+
+#define STRING_POT_SAMPLE_TIME 2  // milliseconds
+
 /* ========================================================
  *                      Analog Sensor
  * A class to handle reading a sensor value from an adc instance
@@ -53,7 +58,7 @@ class AnalogSensor {
  *                 Filtered Analog Sensor
  * ========================================================*/
 
-class FilteredAnalogSensor {
+class FilteredAnalogSensor : public AnalogSensor {
   public:
     FilteredAnalogSensor(int pin, ADC* adc, int adc_number);
 
@@ -81,16 +86,18 @@ class FilteredAnalogSensor {
  *                     StringPot Sensor
  * ========================================================*/
 
-class StringPot : public AnalogSensor {
+class StringPot {
   public:
-    StringPot(int pin, ADC* adc, int adc_number, Transform* transform);
-    StringPot(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_max, float length_min, float length_max);
+    StringPot(FilteredAnalogSensor* analog_sensor, Transform* transform);
+    StringPot(FilteredAnalogSensor* analog_sensor, unsigned int adc_min, unsigned int adc_max, float length_min, float length_max);
 
     // read and return
     float read_length();
+    unsigned int read_adc();
 
     // don't read, just return
     float get_length();
+    unsigned int get_adc_value();
 
     float adc_value_to_length(unsigned int adc_value);
     unsigned int length_to_adc_value(float length);
@@ -99,16 +106,22 @@ class StringPot : public AnalogSensor {
     void set_adc_max(float value);
     void set_adc_range(float min_value, float max_value);
 
+    int update();
+
   protected:
     Transform* _transform;
+    FilteredAnalogSensor* _analog_sensor;
     float _length;
+    elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
+    int _sample_count;
+    // elapsedMillis _filter_timer;  // run at 50 Hz, 20 ms
 };
 
 
 /* ========================================================
  *                     PressureSensor
  * ========================================================*/
-
+/*
 class PressureSensor : public AnalogSensor {
   public:
     PressureSensor(int pin, ADC* adc, int adc_number, Transform* transform);
@@ -122,12 +135,13 @@ class PressureSensor : public AnalogSensor {
     Transform* _transform;
     float _pressure;
 };
+*/
 
 
 /* ========================================================
  *                     JoystickAxis
  * ========================================================*/
-
+/*
 class JoystickAxis : public AnalogSensor {
   public:
     JoystickAxis(int pin, ADC* adc, int adc_number, Transform* transform);
@@ -140,6 +154,7 @@ class JoystickAxis : public AnalogSensor {
     Transform* _transform;
     float _axis;
 };
+*/
 
 
 // TODO force sensor
