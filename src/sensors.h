@@ -119,8 +119,41 @@ class StringPot {
 
 
 /* ========================================================
- *                     PressureSensor
+ *                     CalfSensor
  * ========================================================*/
+
+
+class CalfSensor {
+  public:
+    CalfSensor(AnalogSensor* analog_sensor, Transform* transform);
+    CalfSensor(AnalogSensor* analog_sensor, unsigned int adc_min, unsigned int adc_max, float length_min, float length_max);
+
+    // read and return
+    float read_length();
+    unsigned int read_adc();
+
+    // don't read, just return
+    float get_length();
+    unsigned int get_adc_value();
+
+    float adc_value_to_length(unsigned int adc_value);
+    unsigned int length_to_adc_value(float length);
+
+    void set_adc_min(float value);
+    void set_adc_max(float value);
+    void set_adc_range(float min_value, float max_value);
+
+    int update();
+
+  protected:
+    Transform* _transform;
+    FilteredAnalogSensor* _analog_sensor;
+    float _length;
+    elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
+    int _sample_count;
+    // elapsedMillis _filter_timer;  // run at 50 Hz, 20 ms
+};
+
 /*
 class PressureSensor : public AnalogSensor {
   public:
@@ -156,6 +189,4 @@ class JoystickAxis : public AnalogSensor {
 };
 */
 
-
-// TODO force sensor
 #endif

@@ -122,7 +122,7 @@ class InterpolatedTransform : public Transform {
 };
 
 
-class JointAngleTransform {
+class JointAngleTransform : public Transform {
   public:
     JointAngleTransform(float a, float b, float zero);
 
@@ -148,6 +148,55 @@ class JointAngleTransform {
     float _b;
     float _ab2;
     float _2ab;
+};
+
+/*
+ * Rather than do perfect trig, the 4-bar linkage
+ * made up of the ride height sensor can be approximated
+ * with a linear transform with <1% error
+ * the final angle to spring length (and leg load) then gives
+ * approximately 30 lbs of error
+ *
+ *
+ */
+class CalfLoadTransform : public Transform {
+  public:
+    CalfLoadTransform(
+        float a, float b, float slope, float offset,
+        float base_length, float inches_to_lbs);
+
+    float get_a();
+    float get_b();
+    float get_base_length();
+    float get_inches_to_lbs();
+    float get_slope();
+    float get_offset();
+    float get_spring_length();
+
+    void set_a(float a);
+    void set_b(float b);
+    void set_base_length(float base_length);
+    void set_inches_to_lbs(float inches_to_lbs);
+    void set_slope(float slope);
+    void set_offset(float offset);
+
+    float src_to_dst(float src_value);
+    float value_to_load(float value);
+
+    float dst_to_src(float dst_value);
+    float load_to_value(float load);
+
+  private:
+    float _slope;  // sensor to angle slope
+    float _offset;
+    float _sl;
+    void _compute_ab();
+    float _a;
+    float _b;
+    float _ab2;
+    float _2ab;
+    float _base_length;
+    float _inches_to_lbs;
 };
 
 #endif

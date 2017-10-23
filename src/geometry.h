@@ -70,4 +70,13 @@
 
 //#define PI 3.141592653589793
 
+#define CALF_LINK_LENGTH 8.0  // a
+#define CALF_TO_SHOCK_LENGTH 18.0  // b
+#define CALF_SHOCK_BASE_LENGTH 18.0
+// TODO get these for all legs
+// assuming full range of sensor 0-65535 and 2000 lb load
+#define CALF_SENSOR_SLOPE -0.0000083891708147599049
+#define CALF_SENSOR_OFFSET 1.3386050049460962  // radians(~77)
+#define CALF_INCHES_TO_LBS 600.0
+
 #endif

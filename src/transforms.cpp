@@ -331,3 +331,101 @@ void JointAngleTransform::_compute_ab() {
   _ab2 = _a * _a + _b * _b;
   _2ab = 2 * _a * _b;
 }
+
+
+/* ========================================================
+ *                 CalfLoadTransform
+ * ========================================================*/
+
+CalfLoadTransform::CalfLoadTransform(
+    float a, float b, float slope, float offset,
+    float base_length, float inches_to_lbs) {
+  _a = a;
+  _b = b;
+  _slope = slope;
+  _sl = -1.0;  // start as invalid
+  _offset = offset;
+  _base_length = base_length;
+  _inches_to_lbs = inches_to_lbs;
+  _compute_ab();
+}
+
+float CalfLoadTransform::get_a() {
+  return _a;
+}
+
+float CalfLoadTransform::get_b() {
+  return _b;
+}
+
+float CalfLoadTransform::get_base_length() {
+  return _base_length;
+}
+
+float CalfLoadTransform::get_inches_to_lbs() {
+  return _inches_to_lbs;
+}
+
+float CalfLoadTransform::get_slope() {
+  return _slope;
+}
+
+float CalfLoadTransform::get_offset() {
+  return _offset;
+}
+
+float CalfLoadTransform::get_spring_length() {
+  return _sl;
+}
+
+void CalfLoadTransform::set_a(float a) {
+  _a = a;
+  _compute_ab();
+}
+
+void CalfLoadTransform::set_b(float b) {
+  _b = b;
+  _compute_ab();
+}
+
+void CalfLoadTransform::set_base_length(float base_length) {
+  _base_length = base_length;
+}
+
+void CalfLoadTransform::set_inches_to_lbs(float inches_to_lbs) {
+  _inches_to_lbs = inches_to_lbs;
+}
+
+void CalfLoadTransform::set_slope(float slope) {
+  _slope = slope;
+}
+
+void CalfLoadTransform::set_offset(float offset) {
+  _offset = offset;
+}
+
+float CalfLoadTransform::src_to_dst(float src_value) {
+  // linear model for 4 bar linkage
+  // upper triangle angle to opposite side
+  _sl = sqrt(_ab2 - _2ab * cos((src_value * _slope + _offset)));
+  // convert spring length change to lbs
+  return (_base_length - _sl) * _inches_to_lbs;
+}
+
+float CalfLoadTransform::value_to_load(float value) {
+  return src_to_dst(value);
+}
+
+float CalfLoadTransform::dst_to_src(float dst_value) {
+  float sl = _base_length - dst_value / _inches_to_lbs;
+  return (acos((_ab2 - sl * sl) / _2ab) - _offset) / _slope;
+}
+
+float CalfLoadTransform::load_to_value(float load) {
+  return dst_to_src(load);
+}
+
+void CalfLoadTransform::_compute_ab() {
+  _ab2 = _a * _a + _b * _b;
+  _2ab = 2 * _a * _b;
+}
