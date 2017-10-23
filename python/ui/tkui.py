@@ -58,7 +58,7 @@ cmds = {
     7: 'plan(byte,byte,float,float,float,float,float,float,float)',
     8: 'enable_pid(bool)',
     9: 'xyz_values=float,float,float',
-    10: 'angles=float,float,float',
+    10: 'angles=float,float,float,float,bool',
     11: 'set_pid(byte,float,float,float,float,float)',
     12: 'loop_time=uint32',
 }
@@ -423,13 +423,15 @@ if __name__ == '__main__':
             hs.value, ts.value, ks.value,
             he.value, te.value, ke.value)
 
-    def on_angles(hip, thigh, knee):
+    def on_angles(hip, thigh, knee, calf, is_valid):
         hip = hip.value
         thigh = thigh.value
         knee = knee.value
-        lf("angles", hip, thigh, knee)
+        calf = calf.value
+        is_valid = bool(is_valid)
+        lf("angles", hip, thigh, knee, calf, is_valid)
         # log angles
-        leg_display.draw_leg([hip, thigh, knee])
+        leg_display.draw_leg([hip, thigh, knee, calf, is_valid])
 
     def on_xyz_values(x, y, z):
         x = x.value

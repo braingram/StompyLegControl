@@ -71,6 +71,7 @@ class Leg {
     StringPot* hip_pot;
     StringPot* thigh_pot;
     StringPot* knee_pot;
+    CalfSensor* calf_sensor;
 
     Valve* hip_valve;
     Valve* thigh_valve;
@@ -83,6 +84,7 @@ class Leg {
     JointAngleTransform* hip_angle_transform;
     JointAngleTransform* thigh_angle_transform;
     JointAngleTransform* knee_angle_transform;
+    CalfLoadTransform* calf_load_transform;
 
     PID* hip_pid;
     PID* thigh_pid;
@@ -93,6 +95,7 @@ class Leg {
     // used only for reporting
     JointAngle3D joint_angles;
     Point3D foot_position;
+    float calf_load;
     bool foot_position_valid;
 
     Point3D target_position;

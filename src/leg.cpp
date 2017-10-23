@@ -51,6 +51,13 @@ Leg::Leg() {
   knee_angle_transform = new JointAngleTransform(
     KNEE_A, KNEE_B, KNEE_ZERO_ANGLE);
 
+  calf_load_transform = new CalfLoadTransform(
+    CALF_LINK_LENGTH, CALF_TO_SHOCK_LENGTH,
+    CALF_SENSOR_SLOPE, CALF_SENSOR_OFFSET,
+    CALF_SHOCK_BASE_LENGTH, CALF_INCHES_TO_LBS);
+
+  calf_sensor = new CalfSensor(
+      calf_analog_sensor, calf_load_transform);
 
   hip_pid = new PID(HIP_P, HIP_I, HIP_D, HIP_PID_MIN, HIP_PID_MAX);
   thigh_pid = new PID(THIGH_P, THIGH_I, THIGH_D, THIGH_PID_MIN, THIGH_PID_MAX);
@@ -137,6 +144,7 @@ void Leg::update() {
   hip_joint->update();
   thigh_joint->update();
   knee_joint->update();
+  calf_sensor->update();
 };
 
 void Leg::_update_plan() {
@@ -318,6 +326,9 @@ void Leg::compute_foot_position() {
   // TODO check return value, stop on false?
   foot_position_valid = kinematics->angles_to_xyz(
       joint_angles, &foot_position);
+
+  // compute calf load
+  calf_load = calf_sensor->get_load();
 };
 
 void Leg::set_next_plan(PlanStruct new_plan) {

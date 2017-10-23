@@ -89,7 +89,10 @@ class FilteredAnalogSensor : public AnalogSensor {
 class StringPot {
   public:
     StringPot(FilteredAnalogSensor* analog_sensor, Transform* transform);
-    StringPot(FilteredAnalogSensor* analog_sensor, unsigned int adc_min, unsigned int adc_max, float length_min, float length_max);
+    StringPot(
+      FilteredAnalogSensor* analog_sensor,
+      unsigned int adc_min, unsigned int adc_max,
+      float length_min, float length_max);
 
     // read and return
     float read_length();
@@ -111,7 +114,7 @@ class StringPot {
   protected:
     Transform* _transform;
     FilteredAnalogSensor* _analog_sensor;
-    float _length;
+    //float _length; // TODO cache length?
     elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
     int _sample_count;
     // elapsedMillis _filter_timer;  // run at 50 Hz, 20 ms
@@ -122,6 +125,35 @@ class StringPot {
  *                     CalfSensor
  * ========================================================*/
 
+class CalfSensor {
+  public:
+    CalfSensor(
+      FilteredAnalogSensor* analog_sensor, CalfLoadTransform* transform);
+
+    // read and return
+    float read_load();
+    unsigned int read_adc();
+
+    // don't read, just return
+    float get_load();
+    unsigned int get_adc_value();
+
+    float adc_value_to_load(unsigned int adc_value);
+    unsigned int load_to_adc_value(float length);
+
+    int update();
+
+  protected:
+    CalfLoadTransform* _transform;
+    FilteredAnalogSensor* _analog_sensor;
+    //float _load; // TODO cache load?
+    elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
+    int _sample_count;
+};
+
+
+
+/*
 
 class CalfSensor {
   public:
@@ -153,6 +185,7 @@ class CalfSensor {
     int _sample_count;
     // elapsedMillis _filter_timer;  // run at 50 Hz, 20 ms
 };
+*/
 
 /*
 class PressureSensor : public AnalogSensor {

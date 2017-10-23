@@ -227,6 +227,8 @@ void loop() {
     cmd.add_arg(leg->joint_angles.hip);
     cmd.add_arg(leg->joint_angles.thigh);
     cmd.add_arg(leg->joint_angles.knee);
+    cmd.add_arg(leg->calf_load);
+    cmd.add_arg(leg->foot_position_valid);
     cmd.finish_command();
 
     cmd.start_command(CMD_XYZ_VALUE);

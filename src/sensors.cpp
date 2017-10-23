@@ -133,6 +133,53 @@ int StringPot::update() {
 
 
 /* ========================================================
+ *                      CalfSensor
+ * ========================================================*/
+
+CalfSensor::CalfSensor(FilteredAnalogSensor* analog_sensor, CalfLoadTransform* transform) {
+  _analog_sensor = analog_sensor;
+  _transform = transform;
+}
+
+float CalfSensor::read_load() {
+  _analog_sensor->read_adc();
+  return get_load();
+}
+
+unsigned int CalfSensor::read_adc() {
+  return _analog_sensor->read_adc();
+}
+
+float CalfSensor::get_load() {
+  return adc_value_to_load(_analog_sensor->get_adc_value());
+}
+
+unsigned int CalfSensor::get_adc_value() {
+  return _analog_sensor->get_adc_value();
+}
+
+float CalfSensor::adc_value_to_load(unsigned int adc_value) {
+  return _transform->src_to_dst(adc_value);
+}
+
+unsigned int CalfSensor::load_to_adc_value(float load) {
+  return (unsigned int)(_transform->dst_to_src(load));
+}
+
+int CalfSensor::update() {
+  // TODO same sample time/return as string pots?
+  if (_sample_timer > STRING_POT_SAMPLE_TIME) {
+    _analog_sensor->sample();
+    _sample_count = (_sample_count + 1) % N_FILTER_SAMPLES;
+    if (_sample_count == 0) {
+      _analog_sensor->filter();
+      return STRING_POT_READY;
+    };
+  };
+  return STRING_POT_NO_SAMPLE;
+}
+
+/* ========================================================
  *                   PressureSensor
  * ========================================================*/
 /*
