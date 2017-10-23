@@ -22,6 +22,7 @@ elapsedMillis adc_timer;
 #define CMD_ANGLES 10
 #define CMD_SET_PID 11
 #define CMD_LOOP_TIME 12
+#define CMD_LEG_NUMBER 13
 
 void on_estop(CommandProtocol *cmd){
   byte severity = ESTOP_DEFAULT;
@@ -166,9 +167,25 @@ void on_set_pid(CommandProtocol *cmd) {
     // re-enable pid? need to do this outside the loop
 };
 
+void on_leg_number(CommandProtocol *cmd) {
+  if (!cmd->has_arg()) {
+    // return leg number
+    cmd->start_command(CMD_LEG_NUMBER);
+    cmd->add_arg((byte)(leg->leg_number));
+    cmd->finish_command();
+    return;
+  };
+  // write leg number
+  byte v = cmd->get_arg<byte>();
+  if (v <= LEGNUMBER_MAX) {
+    // write to eeprom
+    write_leg_number_to_eeprom((LEG_NUMBER)(v));
+  }
+}
+
 void setup(){
   Serial.begin(9600);
-  leg->set_leg_number(LEG_NUMBER::FR);
+  //leg->set_leg_number(LEG_NUMBER::FR);
 
   com.register_protocol(0, cmd);
   cmd.register_callback(CMD_ESTOP, on_estop);
@@ -178,6 +195,7 @@ void setup(){
   cmd.register_callback(CMD_PLAN, on_plan);
   cmd.register_callback(CMD_ENABLE_PID, on_enable_pid);
   cmd.register_callback(CMD_SET_PID, on_set_pid);
+  cmd.register_callback(CMD_LEG_NUMBER, on_leg_number);
 }
 
 void loop() {

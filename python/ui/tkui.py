@@ -61,6 +61,7 @@ cmds = {
     10: 'angles=float,float,float,float,bool',
     11: 'set_pid(byte,float,float,float,float,float)',
     12: 'loop_time=uint32',
+    13: 'leg_number(byte)=byte',
 }
 
 
@@ -81,6 +82,16 @@ COLORS = [
     'red',
     'green',
     'blue']
+
+LEG_NAMES = {
+    0: 'Undefined',
+    1: 'Front-Left',
+    2: 'Middle-Left',
+    3: 'Rear-Left',
+    4: 'Rear-Right',
+    5: 'Middle-Right',
+    6: 'Front-Right',
+}
 
 
 class LegDisplay(object):
@@ -449,12 +460,20 @@ if __name__ == '__main__':
     def on_heartbeat():
         root.last_heartbeat = time.time()
 
+    def on_leg_number(number):
+        number = number.value
+        lf("leg_number", number)
+        print("Leg number: %s" % number)
+        root.wm_title("%s" % LEG_NAMES.get(number, 'INVALID'))
+
     mgr.on('heartbeat', on_heartbeat)
     mgr.on('adc', on_adc)
     mgr.on('loop_time', on_loop_time)
     mgr.on('pid', on_pid)
     mgr.on('angles', on_angles)
     mgr.on('xyz_values', on_xyz_values)
+    mgr.on('leg_number', on_leg_number)
+    ns.leg_number()  # request leg number
 
     def send_heartbeat():
         ns.heartbeat()

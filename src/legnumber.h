@@ -7,6 +7,12 @@
 #ifndef LEGNUMBER_H
 #define LEGNUMBER_H
 
+#include "Arduino.h"
+#include <EEPROM.h>
+
+#define LEGNUMBER_ADDR 2047
+#define LEGNUMBER_MAX 6
+
 enum class LEG_NUMBER : uint8_t {
   UNDEFINED,
   FL,
@@ -16,5 +22,9 @@ enum class LEG_NUMBER : uint8_t {
   MR,
   FR,
 };
+
+void write_leg_number_to_eeprom(LEG_NUMBER n);
+
+LEG_NUMBER read_leg_number_from_eeprom();
 
 #endif

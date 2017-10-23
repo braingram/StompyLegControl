@@ -88,8 +88,8 @@ Leg::Leg() {
   knee_joint = new Joint(
       knee_valve, knee_pot, knee_angle_transform, knee_pid);
 
-  // TODO read leg number from eeprom
-  leg_number = LEG_NUMBER::UNDEFINED;
+  leg_number = read_leg_number_from_eeprom();
+
   kinematics = new Kinematics(leg_number);
 
 
@@ -103,6 +103,8 @@ Leg::Leg() {
   next_plan.active = false;
 
   last_target_point_generation_time = 0;
+  
+  set_leg_number(leg_number);
 };
 
 void Leg::set_leg_number(LEG_NUMBER leg) {
@@ -113,6 +115,13 @@ void Leg::set_leg_number(LEG_NUMBER leg) {
     case (LEG_NUMBER::ML):
       hip_angle_transform->set_b(HIP_B_MIDDLE);
       hip_angle_transform->set_zero(HIP_ZERO_ANGLE_MIDDLE);
+      break;
+  };
+  switch (leg_number) {
+    case (LEG_NUMBER::FL):
+    case (LEG_NUMBER::ML):
+    case (LEG_NUMBER::RL):
+      // reverse calf sensor
       break;
   };
 };
