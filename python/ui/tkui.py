@@ -13,6 +13,11 @@ knee value/length/angle? (slider)
 calf value/length/angle? (slider)
 
 pid settings p/i/d/min/max (numeric inputs)
+
+calibration (per leg)
+[done]adc min/max of hip/thigh/knee
+calf slope and offset
+[done] pwm extend/retract min/max of hip/thigh/knee
 """
 
 import datetime
@@ -62,8 +67,39 @@ cmds = {
     11: 'set_pid(byte,float,float,float,float,float)',
     12: 'loop_time=uint32',
     13: 'leg_number(byte)=byte',
+    14: 'pwm_limits(byte,float,float,float,float)',
+    15: 'adc_limits(byte,float,float)',
+    16: 'calf_scale(float,float)',
 }
 
+calibrations = {
+    1: [  # fr calibration: 170904
+        # 20% symmetric deadband, 100% max, 13 bit
+        ('pwm_limits', (0, 1638, 8192, 1638, 8192)),
+        ('pwm_limits', (1, 1638, 8192, 1638, 8192)),
+        ('pwm_limits', (2, 1638, 8192, 1638, 8192)),
+        ('adc_limits', (0, 6155, 51979)),
+        ('adc_limits', (1, 2218, 60632)),
+        ('adc_limits', (2, 3417, 54144)),
+        ('set_pid', (0, 5.0, 1.0, 0.0, -8192, 8192)),
+        ('set_pid', (1, 5.0, 1.0, 0.0, -8192, 8192)),
+        ('set_pid', (2, 5.0, 1.0, 0.0, -8192, 8192)),
+        # calf scale
+    ],
+    7: [  # fake leg
+        ('pwm_limits', (0, 0, 8192, 0, 8192)),
+        ('pwm_limits', (1, 0, 8192, 0, 8192)),
+        ('pwm_limits', (2, 0, 8192, 0, 8192)),
+        ('pwm_limits', (2, 0, 8192, 0, 8192)),
+        ('adc_limits', (0, 0, 65535)),
+        ('adc_limits', (1, 0, 65535)),
+        ('adc_limits', (2, 0, 65535)),
+        ('set_pid', (0, 5.0, 0.0, 0.0, -8192, 8192)),
+        ('set_pid', (1, 5.0, 0.0, 0.0, -8192, 8192)),
+        ('set_pid', (2, 5.0, 0.0, 0.0, -8192, 8192)),
+        # calf scale
+    ],
+}
 
 LIMITS = [
     [-0.706, 0.706],
@@ -91,6 +127,7 @@ LEG_NAMES = {
     4: 'Rear-Right',
     5: 'Middle-Right',
     6: 'Front-Right',
+    7: 'Fake',
 }
 
 
@@ -215,12 +252,12 @@ class PIDFrame(object):
         tk.Label(self.frame, text="D:").pack(side=tk.LEFT)
         self.d_entry = tk.Entry(self.frame)
         self.d_entry.pack(side=tk.LEFT)
-        tk.Label(self.frame, text="MIN:").pack(side=tk.LEFT)
-        self.min_entry = tk.Entry(self.frame)
-        self.min_entry.pack(side=tk.LEFT)
-        tk.Label(self.frame, text="MAX:").pack(side=tk.LEFT)
-        self.max_entry = tk.Entry(self.frame)
-        self.max_entry.pack(side=tk.LEFT)
+        #tk.Label(self.frame, text="MIN:").pack(side=tk.LEFT)
+        #self.min_entry = tk.Entry(self.frame)
+        #self.min_entry.pack(side=tk.LEFT)
+        #tk.Label(self.frame, text="MAX:").pack(side=tk.LEFT)
+        #self.max_entry = tk.Entry(self.frame)
+        #self.max_entry.pack(side=tk.LEFT)
         self.commit = tk.Button(
             self.frame, text="Commit", command=self.commit_values)
         self.commit.pack(side=tk.LEFT)
@@ -232,8 +269,10 @@ class PIDFrame(object):
         p = float(self.p_entry.get())
         i = float(self.i_entry.get())
         d = float(self.d_entry.get())
-        minv = float(self.min_entry.get())
-        maxv = float(self.max_entry.get())
+        #minv = float(self.min_entry.get())
+        #maxv = float(self.max_entry.get())
+        minv = -8192
+        maxv = 8192
         self.cb(self.label, p, i, d, minv, maxv)
 
 
@@ -464,6 +503,13 @@ if __name__ == '__main__':
         number = number.value
         lf("leg_number", number)
         print("Leg number: %s" % number)
+        # load calibration
+        vs = calibrations.get(number, [])
+        for v in vs:
+            f, args = v
+            print("Calibration: %s, %s" % (f, args))
+            getattr(ns, f)(*args)
+        # set speed?
         root.wm_title("%s" % LEG_NAMES.get(number, 'INVALID'))
 
     mgr.on('heartbeat', on_heartbeat)
@@ -473,6 +519,9 @@ if __name__ == '__main__':
     mgr.on('angles', on_angles)
     mgr.on('xyz_values', on_xyz_values)
     mgr.on('leg_number', on_leg_number)
+    print("setting leg number")
+    ns.leg_number(7)
+    print("leg number set")
     ns.leg_number()  # request leg number
 
     def send_heartbeat():

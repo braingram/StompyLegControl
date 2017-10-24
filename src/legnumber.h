@@ -11,7 +11,7 @@
 #include <EEPROM.h>
 
 #define LEGNUMBER_ADDR 2047
-#define LEGNUMBER_MAX 6
+#define LEGNUMBER_MAX 7
 
 enum class LEG_NUMBER : uint8_t {
   UNDEFINED,
@@ -21,6 +21,7 @@ enum class LEG_NUMBER : uint8_t {
   RR,
   MR,
   FR,
+  FAKE
 };
 
 void write_leg_number_to_eeprom(LEG_NUMBER n);

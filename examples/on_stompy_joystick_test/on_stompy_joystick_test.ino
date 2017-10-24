@@ -23,6 +23,9 @@ elapsedMillis adc_timer;
 #define CMD_SET_PID 11
 #define CMD_LOOP_TIME 12
 #define CMD_LEG_NUMBER 13
+#define CMD_PWM_LIMITS 14
+#define CMD_ADC_LIMITS 15
+#define CMD_CALF_SCALE 16
 
 void on_estop(CommandProtocol *cmd){
   byte severity = ESTOP_DEFAULT;
@@ -168,19 +171,91 @@ void on_set_pid(CommandProtocol *cmd) {
 };
 
 void on_leg_number(CommandProtocol *cmd) {
-  if (!cmd->has_arg()) {
-    // return leg number
-    cmd->start_command(CMD_LEG_NUMBER);
-    cmd->add_arg((byte)(leg->leg_number));
-    cmd->finish_command();
-    return;
-  };
   // write leg number
-  byte v = cmd->get_arg<byte>();
-  if (v <= LEGNUMBER_MAX) {
-    // write to eeprom
-    write_leg_number_to_eeprom((LEG_NUMBER)(v));
+  if (cmd->has_arg()) {
+    byte v = cmd->get_arg<byte>();
+    if (v <= LEGNUMBER_MAX) {
+      // write to eeprom
+      write_leg_number_to_eeprom((LEG_NUMBER)(v));
+      leg->set_leg_number((LEG_NUMBER)(v));
+    };
+  };
+  // return leg number
+  cmd->start_command(CMD_LEG_NUMBER);
+  cmd->add_arg((byte)(leg->leg_number));
+  cmd->finish_command();
+}
+
+void on_pwm_limits(CommandProtocol *cmd) {
+  // joint index, extend min, extend max, retract min, retract max
+  if (!cmd->has_arg()) return;
+  byte ji = cmd->get_arg<byte>();
+  if (ji > 2) return;
+  if (!cmd->has_arg()) return;
+  float emin = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  float emax = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  float rmin = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  float rmax = cmd->get_arg<float>();
+  if (emax <= emin) return;
+  if (rmax <= rmin) return;
+  Valve* valve;
+  switch (ji) {
+      case 0:
+          valve = leg->hip_valve;
+          break;
+      case 1:
+          valve = leg->thigh_valve;
+          break;
+      case 2:
+          valve = leg->knee_valve;
+          break;
   }
+  // disable pid (estop?)
+  leg->disable_pids();
+  valve->set_pwm_limits(emin, emax, rmin, rmax);
+  //pid->reset();
+  // re-enable pid? need to do this outside the loop
+}
+
+void on_adc_limits(CommandProtocol *cmd) {
+  // joint index, adc_min, adc_max
+  if (!cmd->has_arg()) return;
+  byte ji = cmd->get_arg<byte>();
+  if (ji > 2) return;
+  if (!cmd->has_arg()) return;
+  float amin = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  float amax = cmd->get_arg<float>();
+  if (amax <= amin) return;
+  StringPot* pot;
+  switch (ji) {
+      case 0:
+          pot = leg->hip_pot;
+          break;
+      case 1:
+          pot = leg->thigh_pot;
+          break;
+      case 2:
+          pot = leg->knee_pot;
+          break;
+  }
+  // disable pid (estop?)
+  leg->disable_pids();
+  pot->set_adc_range(amin, amax);
+  //pid->reset();
+  // re-enable pid? need to do this outside the loop
+}
+
+void on_calf_scale(CommandProtocol *cmd) {
+  if (!cmd->has_arg()) return;
+  float s = cmd->get_arg<float>();
+  if (!cmd->has_arg()) return;
+  float o = cmd->get_arg<float>();
+  leg->calf_load_transform->set_slope(s);
+  leg->calf_load_transform->set_offset(o);
 }
 
 void setup(){
@@ -196,17 +271,22 @@ void setup(){
   cmd.register_callback(CMD_ENABLE_PID, on_enable_pid);
   cmd.register_callback(CMD_SET_PID, on_set_pid);
   cmd.register_callback(CMD_LEG_NUMBER, on_leg_number);
+  cmd.register_callback(CMD_PWM_LIMITS, on_pwm_limits);
+  cmd.register_callback(CMD_ADC_LIMITS, on_adc_limits);
+  cmd.register_callback(CMD_CALF_SCALE, on_calf_scale);
 }
 
 void loop() {
   com.handle_stream();
-  unsigned long t0 = micros();
+  //unsigned long t0 = micros();
   leg->update();
-  t0 = micros() - t0;
+  //t0 = micros() - t0;
   if (adc_timer > ADC_REPORT_TIME) {
+    /*
     cmd.start_command(CMD_LOOP_TIME);
     cmd.add_arg(t0);
     cmd.finish_command();
+    */
     
     cmd.start_command(CMD_ADC_VALUE);
     cmd.add_arg(leg->hip_analog_sensor->get_adc_value());
