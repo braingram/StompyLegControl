@@ -28,7 +28,93 @@ import Tkinter as tk
 
 import serial
 
+import numpy
 import pycomando
+
+foot_centers = {  # body coords in inches
+    'fl': (-77.0, 126.0),
+    'fr': (77.0, 126.0),
+    'ml': (-93.0, 0.0),
+    'mr': (93.0, 0.0),
+    'rl': (-77.0, -126.0),
+    'rr': (77.0, -126.0),
+    'fake': (93.0, 0.0),
+}
+
+neighbors = {
+    'fr': ('fl', 'mr', 'ml', 'rr', 'rl'),
+    'mr': ('fr', 'rr', 'fl', 'ml', 'rl'),
+    'rr': ('mr', 'rl', 'fr', 'fl', 'ml'),
+    'fl': ('fr', 'ml', 'mr', 'rl', 'rr'),
+    'ml': ('fl', 'rl', 'fr', 'mr', 'rr'),
+    'rl': ('ml', 'rr', 'mr', 'fl', 'fr'),
+}
+
+
+class Foot(object):
+    max_restriction = 0.9
+    restriction_threshold = 0.15
+    step_size = 20.0  # inches
+
+    center = (66.0, 0.0)  # foot center in foot coords
+    radius = 42.0  # radius of movement circle (inches)
+
+    # centered on foot_center (self.center)
+    eps = numpy.log(0.1) / radius
+
+    stance_velocity = 8.0  # inches per second
+    swing_velocity = 16.0
+    lower_velocity = 16.0
+    lift_velocity = 16.0
+
+    lower_height = -20.0
+    lift_height = -10.0
+    #velocity_scale = 1.0
+
+    close_enough = 5.0
+
+    def __init__(self, name):
+        self.name = name
+        #self.center = foot_centers[name]
+        self.state = 'stance'
+        self.target = None
+        self.last_update = time.time()
+
+    def restriction(self, position):
+        cx, cy = self.center
+        x, y, z = position
+        d = ((cx - x) ** 2. + (cy - y) ** 2.) ** 0.5
+        return numpy.exp(-self.eps * (d - self.radius))
+
+    def update(self, position, t):
+        dt = t - self.last_update
+        r = self.restriction(position)
+        x, y, z = position
+        ns = None
+        if self.state == 'swing':
+            # check against target position
+            tx, ty = self.target
+            d = ((tx - x) ** 2. + (ty - y) ** 2.) ** 0.5
+            # TODO also check for increase in distance
+            if d < self.close_enough:
+                # if there, move to lower
+                ns = 'lower'
+        elif self.state == 'lower':
+            # lower leg until z at lower_height
+            if z <= self.lower_height:
+                # if there, enter stance
+                ns = 'stance'
+        elif self.state == 'lift':
+            # lift leg until z at lift_height
+            if z >= self.lift_height:
+                # if there, enter swing
+                ns = 'swing'
+        elif self.state == 'stance':
+            # continue moving...
+            pass
+        self.last_update = t
+        return r, ns
+
 
 # setting this to true sends plans in leg coordinates (multi-joint)
 # if this is false, plans will be in sensor coordinates (single joint)
@@ -154,7 +240,19 @@ class LegDisplay(object):
 
     def init(self):
         # TODO draw limits
-        pass
+        self.top_canvas
+        # restriction circle
+        self.side_canvas
+        # restriction circle (as lines)
+        # lift height, lower height
+        self.side_canvas.create_line(
+            0, self.sy - Foot.lift_height * self.scale,
+            self.width, self.sy - Foot.lift_height * self.scale,
+            fill='yellow')
+        self.side_canvas.create_line(
+            0, self.sy - Foot.lower_height * self.scale,
+            self.width, self.sy - Foot.lower_height * self.scale,
+            fill='yellow')
 
     def draw_leg(self, angles):
         if not self._inited:
@@ -200,25 +298,24 @@ class LegDisplay(object):
         for i in xrange(len(pts) - 1):
             pp = pts[i]
             p = pts[i+1]
-            if self.top_lines[i] is None:  # draw line
-                # x0 y0 x1 y1
-                self.top_lines[i] = self.top_canvas.create_line(
+            if self.side_lines[i] is None:  # draw line
+                self.side_lines[i] = self.side_canvas.create_line(
                     pp[0] + self.sx, pp[2] + self.sy,
                     p[0] + self.sx, p[2] + self.sy,
                     fill=COLORS[i])
             else:  # else move line
-                self.top_canvas.coords(
-                    self.top_lines[i],
+                self.side_canvas.coords(
+                    self.side_lines[i],
                     pp[0] + self.sx, pp[2] + self.sy,
                     p[0] + self.sx, p[2] + self.sy)
-            if self.side_lines[i] is None:  # draw line
-                self.side_lines[i] = self.side_canvas.create_line(
+            if self.top_lines[i] is None:  # draw line
+                self.top_lines[i] = self.top_canvas.create_line(
                     pp[0] + self.sx, pp[1] + self.sy,
                     p[0] + self.sx, p[1] + self.sy,
                     fill=COLORS[i])
             else:  # else move line
-                self.side_canvas.coords(
-                    self.side_lines[i],
+                self.top_canvas.coords(
+                    self.top_lines[i],
                     pp[0] + self.sx, pp[1] + self.sy,
                     p[0] + self.sx, p[1] + self.sy)
 
@@ -287,6 +384,8 @@ if __name__ == '__main__':
     mgr = pycomando.protocols.command.EventManager(cmd, cmds)
     ns = mgr.build_namespace()
     ns.estop(2)  # set estop to disable leg
+
+    foot = Foot('unknown')
 
     def send_plan(axis, speed):
         if axis < 0 or axis > 2:
@@ -369,6 +468,11 @@ if __name__ == '__main__':
     fz_label = tk.Label(foot_frame, textvariable=fz)
     fz_title.pack(side=tk.LEFT)
     fz_label.pack(side=tk.LEFT)
+    fr = tk.StringVar()
+    fr_title = tk.Label(foot_frame, text="R:")
+    fr_label = tk.Label(foot_frame, textvariable=fr)
+    fr_title.pack(side=tk.LEFT)
+    fr_label.pack(side=tk.LEFT)
     foot_frame.pack(side=tk.TOP)
     leg_frame = tk.Frame(root)
     leg_frame.pack(side=tk.TOP)
@@ -433,6 +537,13 @@ if __name__ == '__main__':
         elif c in 'fgh':  # hip thigh knee backward
             a = 'fgh'.index(c)
             d = -1.
+        elif c == 'p':
+            p = [1, 2, 0., 0., 0., 0., 0., 0., 1.]
+            p[3] = -foot.stance_velocity
+            ns.plan(*p)
+            foot.state = 'stance'
+            print("new state: %s[%s]" % (foot.state, p))
+            return
         else:
             return
         sd = bool(event.state & 0x001)  # check shift
@@ -491,6 +602,45 @@ if __name__ == '__main__':
         fx.set('%03.2f' % x)
         fy.set('%03.2f' % y)
         fz.set('%03.2f' % z)
+        # TODO update foot
+        r, new_state = foot.update((x, y, z), time.time())
+        lf('restriction', r)
+        fr.set('%01.3f' % r)
+        if r > foot.max_restriction:  # TODO hold
+            print("restriction too high, stopping")
+            stop()
+        if foot.state == 'stance' and r > Foot.restriction_threshold:
+            new_state = 'lift'
+        if new_state is not None:
+            # transition to new state
+            # [mode[vel], frame[leg], x, y, z, ax, ay, az, spd]
+            p = [1, 2, 0., 0., 0., 0., 0., 0., 1.]
+            if new_state == 'swing':
+                ## set target
+                foot.target = (foot.center[0], foot.center[1] + foot.step_size)
+                # send swing command
+                #dx = foot.target[0] - x
+                #dy = foot.target[1] - y
+                #l = (dx * dx + dy * dy) ** 0.5
+                #p[2] = dx / l * foot.swing_velocity
+                #p[3] = dy / l * foot.swing_velocity
+                p[0] = 3
+                p[2] = foot.target[0]
+                p[3] = foot.target[1]
+                p[4] = foot.lift_height
+                p[-1] = foot.swing_velocity
+            elif new_state == 'stance':
+                p[3] = -foot.stance_velocity
+            elif new_state == 'lift':
+                p[3] = -foot.stance_velocity
+                p[4] = foot.lift_velocity
+            elif new_state == 'lower':
+                p[3] = -foot.stance_velocity
+                p[4] = -foot.lower_velocity
+            ns.plan(*p)
+            lf('plan', *p)
+            print("new state: %s[%s]" % (new_state, p))
+            foot.state = new_state
 
     def on_estop(estop):
         # TODO estop
@@ -520,7 +670,7 @@ if __name__ == '__main__':
     mgr.on('xyz_values', on_xyz_values)
     mgr.on('leg_number', on_leg_number)
     print("setting leg number")
-    ns.leg_number(7)
+    #ns.leg_number(7)
     print("leg number set")
     ns.leg_number()  # request leg number
 
