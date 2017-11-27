@@ -292,6 +292,7 @@ void loop() {
     cmd.add_arg(leg->hip_analog_sensor->get_adc_value());
     cmd.add_arg(leg->thigh_analog_sensor->get_adc_value());
     cmd.add_arg(leg->knee_analog_sensor->get_adc_value());
+    cmd.add_arg(leg->calf_analog_sensor->get_adc_value());
     cmd.finish_command();
 
     cmd.start_command(CMD_PID_OUTPUT);
