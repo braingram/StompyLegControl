@@ -67,8 +67,8 @@ class Foot(object):
     lower_velocity = 16.0
     lift_velocity = 16.0
 
-    lower_height = -20.0
-    lift_height = -10.0
+    lower_height = -15.0
+    lift_height = -5.0
     #velocity_scale = 1.0
 
     close_enough = 5.0
@@ -141,7 +141,7 @@ cmds = {
     0: 'estop(byte)',  # 0 = off, 1 = soft, 2 = hard
     1: 'heartbeat',
     2: 'pwm(float,float,float)',  # hip thigh knee
-    3: 'adc=uint32,uint32,uint32',
+    3: 'adc=uint32,uint32,uint32,uint32',
     4: 'adc_target(uint32,uint32,uint32)',
     5: 'pwm_value=int32,int32,int32',
     6: 'pid=float,float,float,float,float,float,float,float,float',
@@ -159,7 +159,18 @@ cmds = {
 }
 
 calibrations = {
-    1: [  # fr calibration: 170904
+    5: [  # mr calibration: 170807
+        ('pwm_limits', (0, 1638, 8192, 1638, 8192)),
+        ('pwm_limits', (1, 1638, 8192, 1638, 8192)),
+        ('pwm_limits', (2, 1638, 8192, 1638, 8192)),
+        ('adc_limits', (0, 7072, 52161)),
+        ('adc_limits', (1, 3587, 59747)),
+        ('adc_limits', (2, 9040, 59069)),
+        ('set_pid', (0, 1.0, 1.0, 0.0, -8192, 8192)),
+        ('set_pid', (1, 2.0, 3.0, 0.0, -8192, 8192)),
+        ('set_pid', (2, 2.0, 3.0, 0.0, -8192, 8192)),
+    ],
+    6: [  # fr calibration: 170904
         # 20% symmetric deadband, 100% max, 13 bit
         ('pwm_limits', (0, 1638, 8192, 1638, 8192)),
         ('pwm_limits', (1, 1638, 8192, 1638, 8192)),
@@ -167,9 +178,9 @@ calibrations = {
         ('adc_limits', (0, 6155, 51979)),
         ('adc_limits', (1, 2218, 60632)),
         ('adc_limits', (2, 3417, 54144)),
-        ('set_pid', (0, 5.0, 1.0, 0.0, -8192, 8192)),
-        ('set_pid', (1, 5.0, 1.0, 0.0, -8192, 8192)),
-        ('set_pid', (2, 5.0, 1.0, 0.0, -8192, 8192)),
+        ('set_pid', (0, 1.0, 1.0, 0.0, -8192, 8192)),
+        ('set_pid', (1, 2.0, 3.0, 0.0, -8192, 8192)),
+        ('set_pid', (2, 2.0, 3.0, 0.0, -8192, 8192)),
         # calf scale
     ],
     7: [  # fake leg
@@ -234,15 +245,18 @@ class LegDisplay(object):
             background='black')
         self.top_canvas.pack(side=tk.LEFT)
         self.side_canvas.pack(side=tk.LEFT)
-        self.top_lines = [None, None, None]
-        self.side_lines = [None, None, None]
+        self.top_lines = {}
+        self.side_lines = {}
         self._inited = False
+        self._xyz = None
 
     def init(self):
+        if self._inited:
+            return
         # TODO draw limits
-        self.top_canvas
+        #self.top_canvas
         # restriction circle
-        self.side_canvas
+        #self.side_canvas
         # restriction circle (as lines)
         # lift height, lower height
         self.side_canvas.create_line(
@@ -253,8 +267,20 @@ class LegDisplay(object):
             0, self.sy - Foot.lower_height * self.scale,
             self.width, self.sy - Foot.lower_height * self.scale,
             fill='yellow')
+        self._inited = True
 
-    def draw_leg(self, angles):
+    def draw_restriction(self, r):
+        if self._xyz is None:
+            return
+        if 'restriction' not in self.top_lines:
+            pass
+
+    def draw_state(self, state):
+        pass
+
+    def draw_leg_angles(self, angles):
+        # TODO restriction, state, plan
+        # angles [hip, thigh, knee, calf, is_valid?]
         if not self._inited:
             self.init()
         # compute points [xyz, xyz, xyz]
@@ -295,29 +321,66 @@ class LegDisplay(object):
         # draw or move lines
         # draw aa lines
         pp = [0, 0, 0]
+        ns = ['hip', 'thigh', 'knee']
         for i in xrange(len(pts) - 1):
             pp = pts[i]
             p = pts[i+1]
-            if self.side_lines[i] is None:  # draw line
-                self.side_lines[i] = self.side_canvas.create_line(
+            n = ns[i]
+            if n not in self.side_lines:
+                self.side_lines[n] = self.side_canvas.create_line(
                     pp[0] + self.sx, pp[2] + self.sy,
                     p[0] + self.sx, p[2] + self.sy,
                     fill=COLORS[i])
             else:  # else move line
                 self.side_canvas.coords(
-                    self.side_lines[i],
+                    self.side_lines[n],
                     pp[0] + self.sx, pp[2] + self.sy,
                     p[0] + self.sx, p[2] + self.sy)
-            if self.top_lines[i] is None:  # draw line
-                self.top_lines[i] = self.top_canvas.create_line(
-                    pp[0] + self.sx, pp[1] + self.sy,
-                    p[0] + self.sx, p[1] + self.sy,
+            if n not in self.top_lines:
+                self.top_lines[n] = self.top_canvas.create_line(
+                    pp[0] + self.sx, self.sy - pp[1],
+                    p[0] + self.sx, self.sy - p[1],
                     fill=COLORS[i])
             else:  # else move line
                 self.top_canvas.coords(
-                    self.top_lines[i],
-                    pp[0] + self.sx, pp[1] + self.sy,
-                    p[0] + self.sx, p[1] + self.sy)
+                    self.top_lines[n],
+                    pp[0] + self.sx, self.sy - pp[1],
+                    p[0] + self.sx, self.sy - p[1])
+        # draw load as rectangle (height ~ load)
+        # side: p[0] + self.sx, p[2] + self.sy
+        # top: p[0] + self.sx, self.sy - p[1]
+        lbs = angles[3]
+        self._xyz = (p[0], p[1], p[2])
+        sx, sy = p[0] + self.sx, p[2] + self.sy
+        tx, ty = p[0] + self.sx, self.sy - p[1]
+        sx += 10
+        w = 10
+        h = max(1, int(lbs * 0.1))
+        if lbs > 50:
+            fc = 'red'
+        else:
+            fc = 'blue'
+        if 'calf' not in self.top_lines:
+            # top left bottom right
+            self.top_lines['calf'] = self.top_canvas.create_rectangle(
+                (tx, ty - h, tx + w, ty), fill=fc)
+        else:
+            self.top_canvas.coords(
+                self.top_lines['calf'],
+                tx, ty - h, tx + w, ty)
+            self.top_canvas.itemconfig(
+                self.top_lines['calf'],
+                fill=fc)
+        if 'calf' not in self.side_lines:
+            self.side_lines['calf'] = self.side_canvas.create_rectangle(
+                (sx, sy - h, sx + w, sy), fill=fc)
+        else:
+            self.side_canvas.coords(
+                self.side_lines['calf'],
+                sx, sy - h, sx + w, sy)
+            self.side_canvas.itemconfig(
+                self.side_lines['calf'],
+                fill=fc)
 
 
 class SliderDisplay(object):
@@ -386,6 +449,7 @@ if __name__ == '__main__':
     ns.estop(2)  # set estop to disable leg
 
     foot = Foot('unknown')
+    foot.restriction_control = False
 
     def send_plan(axis, speed):
         if axis < 0 or axis > 2:
@@ -468,6 +532,11 @@ if __name__ == '__main__':
     fz_label = tk.Label(foot_frame, textvariable=fz)
     fz_title.pack(side=tk.LEFT)
     fz_label.pack(side=tk.LEFT)
+    fl = tk.StringVar()
+    fl_title = tk.Label(foot_frame, text="L:")
+    fl_label = tk.Label(foot_frame, textvariable=fl)
+    fl_title.pack(side=tk.LEFT)
+    fl_label.pack(side=tk.LEFT)
     fr = tk.StringVar()
     fr_title = tk.Label(foot_frame, text="R:")
     fr_label = tk.Label(foot_frame, textvariable=fr)
@@ -538,12 +607,22 @@ if __name__ == '__main__':
             a = 'fgh'.index(c)
             d = -1.
         elif c == 'p':
-            p = [1, 2, 0., 0., 0., 0., 0., 0., 1.]
-            p[3] = -foot.stance_velocity
-            ns.plan(*p)
-            foot.state = 'stance'
-            print("new state: %s[%s]" % (foot.state, p))
-            return
+            if foot.restriction_control:
+                print("Disabling restriction control")
+                foot.restriction_control = False
+                lf("restriction_control", 0)
+                stop()
+                return
+            else:
+                print("Enabling restriction control")
+                foot.restriction_control = True
+                lf("restriction_control", 1)
+                p = [1, 2, 0., 0., 0., 0., 0., 0., 1.]
+                p[3] = -foot.stance_velocity
+                ns.plan(*p)
+                foot.state = 'stance'
+                print("new state: %s[%s]" % (foot.state, p))
+                return
         else:
             return
         sd = bool(event.state & 0x001)  # check shift
@@ -559,15 +638,16 @@ if __name__ == '__main__':
     root.bind("<KeyPress>", keypress)
     root.bind("<KeyRelease>", keyrelease)
 
-    def on_adc(hip, thigh, knee):
+    def on_adc(hip, thigh, knee, calf):
         h = hip.value
         t = thigh.value
         k = knee.value
-        lf("adc", h, t, k)
+        c = calf.value
+        lf("adc", h, t, k, c)
         hadc.var.set(h)
         tadc.var.set(t)
         kadc.var.set(k)
-        # TODO calf
+        cadc.var.set(c)
 
     global max_loop_time
     max_loop_time = 0
@@ -589,10 +669,11 @@ if __name__ == '__main__':
         thigh = thigh.value
         knee = knee.value
         calf = calf.value
+        fl.set('%03.1f' % calf)
         is_valid = bool(is_valid)
         lf("angles", hip, thigh, knee, calf, is_valid)
         # log angles
-        leg_display.draw_leg([hip, thigh, knee, calf, is_valid])
+        leg_display.draw_leg_angles([hip, thigh, knee, calf, is_valid])
 
     def on_xyz_values(x, y, z):
         x = x.value
@@ -602,11 +683,13 @@ if __name__ == '__main__':
         fx.set('%03.2f' % x)
         fy.set('%03.2f' % y)
         fz.set('%03.2f' % z)
-        # TODO update foot
+        # update foot
         r, new_state = foot.update((x, y, z), time.time())
         lf('restriction', r)
         fr.set('%01.3f' % r)
-        if r > foot.max_restriction:  # TODO hold
+        if not foot.restriction_control:
+            return
+        if r > foot.max_restriction:  # TODO hold instead of stop
             print("restriction too high, stopping")
             stop()
         if foot.state == 'stance' and r > Foot.restriction_threshold:
@@ -671,6 +754,8 @@ if __name__ == '__main__':
     mgr.on('leg_number', on_leg_number)
     print("setting leg number")
     #ns.leg_number(7)
+    #ns.leg_number(2)
+    #ns.leg_number(6)  # front right
     print("leg number set")
     ns.leg_number()  # request leg number
 
