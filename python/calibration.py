@@ -15,24 +15,23 @@ cylinders = {
     },
 }
 
-# mr 170807
-#joint = 'hip'
-#min_value = 420
-#min_length = 15.9375
-#max_value = 3150
-#max_length = 23.6875
-joint = 'thigh'
-min_value = 757
-min_length = 26.125
-max_value = 2512
-max_length = 33.125
+joint = 'hip'
+min_value = 7900
+min_length = 16.25
+max_value = 42400
+max_length = 22.5
+#joint = 'thigh'
+#min_value = 10600
+#min_length = 25.78
+#max_value = 42700
+#max_length = 33.5625
 #joint = 'knee'
-#min_value = 565
-#min_length = 20.0
-#max_value = 3301
-#max_length = 30.5
+#min_value = 12000
+#min_length = 20.3125
+#max_value = 56400
+#max_length = 31
 
-adc_res = 12
+adc_res = 16
 
 cylinder = cylinders[joint]
 cylinder['max'] = cylinder['min'] + cylinder['stroke']

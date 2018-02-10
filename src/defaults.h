@@ -79,7 +79,7 @@
 // -- for linear pot --
 //#define HIP_P 30.0
 //#define HIP_I 20.0
-#define HIP_P 5.0
+#define HIP_P 1.0
 #define HIP_I 1.0
 #define HIP_D 0.0
 //#define HIP_PID_MIN -65535
@@ -88,9 +88,9 @@
 #define HIP_PID_MAX 8192
 
 //#define THIGH_P 24.0
-#define THIGH_P 5.0
+#define THIGH_P 2.0
 //#define THIGH_I 1.0  // TODO scale by 1000?
-#define THIGH_I 1.0
+#define THIGH_I 3.0
 #define THIGH_D 0.0
 //#define THIGH_PID_MIN -65535
 //#define THIGH_PID_MAX 65535
@@ -98,9 +98,9 @@
 #define THIGH_PID_MAX 8192
 
 //#define KNEE_P 17.0
-#define KNEE_P 5.0
+#define KNEE_P 2.0
 //#define KNEE_I 1.0  // TODO scale by 1000?
-#define KNEE_I 1.0
+#define KNEE_I 3.0
 #define KNEE_D 0.0
 //#define KNEE_PID_MIN -65535
 //#define KNEE_PID_MAX 65535

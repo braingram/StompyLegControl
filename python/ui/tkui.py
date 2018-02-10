@@ -54,7 +54,7 @@ neighbors = {
 class Foot(object):
     max_restriction = 0.9
     restriction_threshold = 0.15
-    step_size = 20.0  # inches
+    step_size = 40.0  # inches
 
     center = (66.0, 0.0)  # foot center in foot coords
     radius = 42.0  # radius of movement circle (inches)
@@ -62,10 +62,10 @@ class Foot(object):
     # centered on foot_center (self.center)
     eps = numpy.log(0.1) / radius
 
-    stance_velocity = 8.0  # inches per second
-    swing_velocity = 16.0
-    lower_velocity = 16.0
-    lift_velocity = 16.0
+    stance_velocity = 1.5  # inches per second
+    swing_velocity = 3.0
+    lower_velocity = 3.0
+    lift_velocity = 3.0
 
     lower_height = -15.0
     lift_height = -5.0
@@ -118,7 +118,7 @@ class Foot(object):
 
 # setting this to true sends plans in leg coordinates (multi-joint)
 # if this is false, plans will be in sensor coordinates (single joint)
-leg_coords = True
+leg_coords = False
 log_data = True
 
 log_filename = None
@@ -159,6 +159,20 @@ cmds = {
 }
 
 calibrations = {
+    1: [  # fl calibration: 180114
+        # hip was swapped (min length = max val), swapped lengths
+        # 20% symmetric deadband, 100% max, 13 bit
+        ('pwm_limits', (0, 1638, 8192, 1638, 8192)),
+        ('pwm_limits', (1, 1638, 8192, 1638, 8192)),
+        ('pwm_limits', (2, 1638, 8192, 1638, 8192)),
+        ('adc_limits', (0, 6520, 50680)),
+        ('adc_limits', (1, 3258, 61003)),
+        ('adc_limits', (2, 10701, 60554)),
+        ('set_pid', (0, 1.0, 1.0, 0.0, -8192, 8192)),
+        ('set_pid', (1, 2.0, 3.0, 0.0, -8192, 8192)),
+        ('set_pid', (2, 1.0, 1.0, 0.0, -8192, 8192)),
+        # calf scale
+    ],
     5: [  # mr calibration: 170807
         ('pwm_limits', (0, 1638, 8192, 1638, 8192)),
         ('pwm_limits', (1, 1638, 8192, 1638, 8192)),
@@ -560,7 +574,7 @@ if __name__ == '__main__':
     speed = tk.Entry(speed_frame)
     speed.delete(0, tk.END)
     if leg_coords:
-        speed.insert(0, "1.5")
+        speed.insert(0, "3.0")
     else:
         speed.insert(0, "1500")
     speed.pack(side=tk.LEFT)
@@ -675,6 +689,9 @@ if __name__ == '__main__':
         # log angles
         leg_display.draw_leg_angles([hip, thigh, knee, calf, is_valid])
 
+    def on_pwm_value(h, t, k):
+        lf("pwm", h.value, t.value, k.value)
+
     def on_xyz_values(x, y, z):
         x = x.value
         y = y.value
@@ -750,6 +767,7 @@ if __name__ == '__main__':
     mgr.on('loop_time', on_loop_time)
     mgr.on('pid', on_pid)
     mgr.on('angles', on_angles)
+    mgr.on('pwm_value', on_pwm_value)
     mgr.on('xyz_values', on_xyz_values)
     mgr.on('leg_number', on_leg_number)
     print("setting leg number")
