@@ -62,6 +62,10 @@ void Joint::disable_pid() {
   _use_pid = false;
 };
 
+bool Joint::pid_enabled() {
+  return _use_pid;
+};
+
 float Joint::get_pid_output() {
   return _pid_output;
 };

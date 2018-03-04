@@ -35,7 +35,7 @@ class Valve {
 
     // and setting by ratio (value from 0 to 1)
     void set_pwm_limits(
-      int extend_min, int extend_max, int retract_min, int retract_max);
+    int extend_min, int extend_max, int retract_min, int retract_max);
     void set_extend_pwm_max(int max);
     int get_extend_pwm_max();
     void set_extend_pwm_min(int min);
@@ -54,6 +54,7 @@ class Valve {
     bool get_enabled();
     int get_pwm();
     int get_direction();
+    float get_ratio();
 
   private:
     // state

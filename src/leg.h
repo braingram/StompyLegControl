@@ -110,6 +110,7 @@ class Leg {
     void enable_valves();
     void enable_pids();
     void disable_pids();
+    bool pids_enabled();
 
     // overwrite current plan, set to stop in sensor frame
     void hold_position();

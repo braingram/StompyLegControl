@@ -106,7 +106,9 @@ class StringPot {
     unsigned int length_to_adc_value(float length);
 
     void set_adc_min(float value);
+    float get_adc_min();
     void set_adc_max(float value);
+    float get_adc_max();
     void set_adc_range(float min_value, float max_value);
 
     int update();

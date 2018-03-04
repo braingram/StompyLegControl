@@ -31,6 +31,7 @@ class Joint {
 
     void enable_pid();
     void disable_pid();
+    bool pid_enabled();
     float get_pid_output();
 
     void _update_pid();

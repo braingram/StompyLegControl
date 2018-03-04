@@ -149,3 +149,17 @@ int Valve::get_pwm() {
 int Valve::get_direction() {
   return _direction;
 };
+
+float Valve::get_ratio() {
+  if (_direction == VALVE_EXTENDING) {
+    return (
+        ((float)_pwm - _extend_pwm_min) /
+        (_extend_pwm_max - _extend_pwm_min));
+  } else if (_direction == VALVE_RETRACTING) {
+    return (
+        ((float)_pwm - _retract_pwm_min) /
+        (_retract_pwm_max - _retract_pwm_min));
+  } else {
+    return 0.0;
+  }
+};

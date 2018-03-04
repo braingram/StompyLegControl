@@ -110,8 +110,16 @@ void StringPot::set_adc_min(float value) {
   ((LinearTransform *)_transform)->set_src_min(value);
 }
 
+float StringPot::get_adc_min() {
+  return ((LinearTransform *)_transform)->get_src_min();
+}
+
 void StringPot::set_adc_max(float value) {
   ((LinearTransform *)_transform)->set_src_max(value);
+}
+
+float StringPot::get_adc_max() {
+  return ((LinearTransform *)_transform)->get_src_max();
 }
 
 void StringPot::set_adc_range(float min_value, float max_value) {

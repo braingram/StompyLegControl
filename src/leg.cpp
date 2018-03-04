@@ -269,6 +269,12 @@ void Leg::_update_plan() {
       if (! valid_plan) {
         hold_position();
       };
+
+      // reset PID on plan switch
+      hip_pid->reset();
+      thigh_pid->reset();
+      knee_pid->reset();
+
       current_plan = next_plan;
       next_plan.active = false;
  
@@ -381,6 +387,13 @@ void Leg::disable_pids() {
   hip_joint->disable_pid();
   thigh_joint->disable_pid();
   knee_joint->disable_pid();
+};
+
+bool Leg::pids_enabled() {
+  return (
+      hip_joint->pid_enabled() |
+      thigh_joint->pid_enabled() |
+      knee_joint->pid_enabled());
 };
 
 void Leg::hold_position() {
