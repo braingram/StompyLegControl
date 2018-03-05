@@ -28,6 +28,7 @@ class PID {
     float get_error();
 
     void reset();
+    void reset_i();
 
     float get_p();
     float get_i();

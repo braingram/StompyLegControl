@@ -107,4 +107,9 @@
 #define KNEE_PID_MIN -8192
 #define KNEE_PID_MAX 8192
 
+#define PID_SEED_TIME 20
+#define PID_FUTURE_TIME 25
+
+#define DITHER_AMP 0
+#define DITHER_TIME 20000
 #endif

@@ -102,6 +102,8 @@ Leg::Leg() {
   current_plan.active = true;
   next_plan.active = false;
 
+  _next_pid_seed_time = PID_SEED_TIME;
+  _future_pid_seed_time = PID_FUTURE_TIME;
   last_target_point_generation_time = 0;
   
   set_leg_number(leg_number);
@@ -270,25 +272,29 @@ void Leg::_update_plan() {
         hold_position();
       };
 
-      // reset PID on plan switch
+      // TODO reset PID on plan switch
+      /*
       hip_pid->reset();
       thigh_pid->reset();
       knee_pid->reset();
+      */
 
       current_plan = next_plan;
       next_plan.active = false;
  
       // make sure a new point gets generated TODO make configurable
-      last_target_point_generation_time = millis() - 21;
+      last_target_point_generation_time = millis() - (_next_pid_seed_time + 1);
     };
   };
 
   // check if a new target position should be generated
   // TODO make time configurable
-  if (millis() - last_target_point_generation_time > 20) {
+  if (millis() - last_target_point_generation_time > _next_pid_seed_time) {
     // generate next target point TODO check output, stop on false
     // TODO make dt configurable
-    follow_plan(current_plan, target_position, &target_position, 0.025); 
+    follow_plan(
+        current_plan, target_position, &target_position,
+        0.001 * _future_pid_seed_time);
     last_target_point_generation_time = millis();
 
     // set joint targets
@@ -420,4 +426,32 @@ void Leg::hold_position() {
   hip_joint->set_target_adc_value(target_position.x);
   thigh_joint->set_target_adc_value(target_position.y);
   knee_joint->set_target_adc_value(target_position.z);
+};
+
+void Leg::set_next_pid_seed_time(unsigned long seed_time) {
+  _next_pid_seed_time = seed_time;
+};
+
+unsigned long Leg::get_next_pid_seed_time() {
+  return _next_pid_seed_time;
+};
+
+void Leg::set_future_pid_seed_time(unsigned long future_time) {
+  _future_pid_seed_time;
+};
+
+unsigned long Leg::get_future_pid_seed_time() {
+  return _future_pid_seed_time;
+};
+
+void Leg::reset_pids() {
+  hip_pid->reset();
+  thigh_pid->reset();
+  knee_pid->reset();
+};
+
+void Leg::reset_pids_i() {
+  hip_pid->reset_i();
+  thigh_pid->reset_i();
+  knee_pid->reset_i();
 };

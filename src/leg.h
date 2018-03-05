@@ -112,9 +112,18 @@ class Leg {
     void disable_pids();
     bool pids_enabled();
 
+    void set_next_pid_seed_time(unsigned long seed_time);
+    unsigned long get_next_pid_seed_time();
+    void set_future_pid_seed_time(unsigned long future_time);
+    unsigned long get_future_pid_seed_time();
+
     // overwrite current plan, set to stop in sensor frame
     void hold_position();
+    void reset_pids();
+    void reset_pids_i();
   private:
+    unsigned long _next_pid_seed_time;
+    unsigned long _future_pid_seed_time;
 };
 
 #endif

@@ -40,13 +40,16 @@ ReportFlags to_report = {
 #define CMD_ADC_LIMITS 8
 #define CMD_CALF_SCALE 9
 #define CMD_REPORT_TIME 10
+#define CMD_PID_SEED_TIME 11
+#define CMD_RESET_PIDS 12
+#define CMD_DITHER 13
 
-#define CMD_REPORT_ADC 11
-#define CMD_REPORT_PID 12
-#define CMD_REPORT_PWM 13
-#define CMD_REPORT_XYZ 14
-#define CMD_REPORT_ANGLES 15
-#define CMD_REPORT_LOOP_TIME 16
+#define CMD_REPORT_ADC 21
+#define CMD_REPORT_PID 22
+#define CMD_REPORT_PWM 23
+#define CMD_REPORT_XYZ 24
+#define CMD_REPORT_ANGLES 25
+#define CMD_REPORT_LOOP_TIME 26
 
 void on_heartbeat(CommandProtocol *cmd) {
   leg->estop->set_heartbeat();
@@ -318,7 +321,7 @@ void on_calf_scale(CommandProtocol *cmd) {
 
 void on_report_time(CommandProtocol *cmd) {
   if (cmd->has_arg()) {
-    report_time = cmd->get_arg<int>();
+    report_time = cmd->get_arg<unsigned long>();
   } else {
     cmd->start_command(CMD_REPORT_TIME);
     cmd->add_arg((unsigned long)(report_time));
@@ -362,6 +365,65 @@ void on_report_loop_time(CommandProtocol *cmd) {
   to_report.loop_time = enable;
 }
 
+void on_pid_seed_time(CommandProtocol *cmd) {
+  if (!cmd->has_arg()) {
+    cmd->start_command(CMD_PID_SEED_TIME);
+    cmd->add_arg(leg->get_next_pid_seed_time());
+    cmd->add_arg(leg->get_future_pid_seed_time());
+    cmd->finish_command();
+    return;
+  }
+  unsigned long next_time = cmd->get_arg<unsigned long>();
+  if (!cmd->has_arg()) return;
+  unsigned long future_time = cmd->get_arg<unsigned long>();
+  leg->set_next_pid_seed_time(next_time);
+  leg->set_future_pid_seed_time(future_time);
+}
+
+void on_reset_pids(CommandProtocol *cmd) {
+  bool i_only = false;
+  if (cmd->has_arg()) i_only = cmd->get_arg<bool>();
+  if (i_only) {
+    leg->reset_pids_i();
+  } else {
+    leg->reset_pids();
+  }
+}
+
+void on_dither(CommandProtocol *cmd) {
+  // joint index, time, amp
+  if (!cmd->has_arg()) return;
+  byte ji = cmd->get_arg<byte>();
+  if (ji > 2) return;
+  Valve* valve;
+  switch (ji) {
+      case 0:
+          valve = leg->hip_valve;
+          break;
+      case 1:
+          valve = leg->thigh_valve;
+          break;
+      case 2:
+          valve = leg->knee_valve;
+          break;
+      default:
+          return;
+  }
+  if (!cmd->has_arg()) {
+    cmd->start_command(CMD_DITHER);
+    cmd->add_arg(ji);
+    cmd->add_arg(valve->get_dither_time());
+    cmd->add_arg(valve->get_dither_amp());
+    cmd->finish_command();
+    return;
+  };
+  unsigned long dither_time = cmd->get_arg<unsigned long>();
+  if (!cmd->has_arg()) return;
+  int dither_amp = cmd->get_arg<int>();
+  valve->set_dither_time(dither_time);
+  valve->set_dither_amp(dither_amp);
+}
+
 
 void setup(){
   Serial.begin(9600);
@@ -378,6 +440,9 @@ void setup(){
   cmd.register_callback(CMD_ADC_LIMITS, on_adc_limits);
   cmd.register_callback(CMD_CALF_SCALE, on_calf_scale);
   cmd.register_callback(CMD_REPORT_TIME, on_report_time);
+  cmd.register_callback(CMD_PID_SEED_TIME, on_pid_seed_time);
+  cmd.register_callback(CMD_RESET_PIDS, on_reset_pids);
+  cmd.register_callback(CMD_DITHER, on_dither);
   cmd.register_callback(CMD_REPORT_ADC, on_report_adc);
   cmd.register_callback(CMD_REPORT_PWM, on_report_pwm);
   cmd.register_callback(CMD_REPORT_PID, on_report_pid);

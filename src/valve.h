@@ -28,7 +28,9 @@ class Valve {
     void disable();
 
     // allow setting of pwm
+    bool update_dither();
     void set_pwm(int pwm);
+    void set_pwm();
     void extend_pwm(int pwm);
     void retract_pwm(int pwm);
     void stop();
@@ -56,11 +58,22 @@ class Valve {
     int get_direction();
     float get_ratio();
 
+    // dither
+    void set_dither_time(unsigned long dither_time);
+    unsigned long get_dither_time();
+    void set_dither_amp(int dither_amp);
+    int get_dither_amp();
+
   private:
     // state
     int _pwm;
     int _direction;
     bool _enabled;
+
+    int _dither;
+    elapsedMicros _dither_timer;
+    unsigned long _dither_time;
+    int _dither_amp;
 
     // pins
     int _extendPin;

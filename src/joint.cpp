@@ -104,6 +104,10 @@ void Joint::update() {
     return;
   };
   if (pot_ready == STRING_POT_READY) {
+    // every STRING_POT_SAMPLE_TIME * N_FILTER_SAMPLES ms (20 ms)
     _update_pid();
+  } else {
+    // update dither and (possibly) set the pwm
+    if (_valve->update_dither()) _valve->set_pwm();
   };
 };

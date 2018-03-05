@@ -83,6 +83,10 @@ void PID::reset() {
   _last_update = millis();
 }
 
+void PID::reset_i() {
+  _i_term = 0;
+}
+
 float PID::get_p() {
   return _p;
 }
