@@ -89,7 +89,7 @@
 
 //#define THIGH_P 24.0
 #define THIGH_P 2.0
-//#define THIGH_I 1.0  // TODO scale by 1000?
+//#define THIGH_I 1.0
 #define THIGH_I 3.0
 #define THIGH_D 0.0
 //#define THIGH_PID_MIN -65535
@@ -99,7 +99,7 @@
 
 //#define KNEE_P 17.0
 #define KNEE_P 2.0
-//#define KNEE_I 1.0  // TODO scale by 1000?
+//#define KNEE_I 1.0
 #define KNEE_I 3.0
 #define KNEE_D 0.0
 //#define KNEE_PID_MIN -65535
@@ -110,6 +110,7 @@
 #define PID_SEED_TIME 20
 #define PID_FUTURE_TIME 25
 
-#define DITHER_AMP 0
-#define DITHER_TIME 20000
+#define DITHER_AMP 0  // 0% by default
+#define DITHER_TIME 4000  // 4 ms on 4 off = 8 ms period = 125 Hz
+
 #endif
