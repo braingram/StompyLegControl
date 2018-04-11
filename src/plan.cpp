@@ -44,9 +44,6 @@ bool follow_plan(PlanStruct plan, Point3D current, Point3D* target, float dt) {
     case (PLAN_ARC_MODE):
       // TODO not implemented
       return false;
-    case (PLAN_TARGET_MODE):
-      // TODO not implemented
-      return false;
   }
   */
   return false;

@@ -4,17 +4,17 @@
 // ----------- Hip cylinder --------
 #define HIP_CYLINDER_MIN_LENGTH 16.0
 #define HIP_CYLINDER_MAX_LENGTH 24.0
-#define HIP_CYILNDER_TRAVEL 8.0
+#define HIP_CYLINDER_TRAVEL 8.0
 
 // ----------- Thigh cylinder --------
 #define THIGH_CYLINDER_MIN_LENGTH 24.0
 #define THIGH_CYLINDER_MAX_LENGTH 38.0
-#define THIGH_CYILNDER_TRAVEL 14.0
+#define THIGH_CYLINDER_TRAVEL 14.0
 
 // ----------- Knee cylinder --------
 #define KNEE_CYLINDER_MIN_LENGTH 20.0
 #define KNEE_CYLINDER_MAX_LENGTH 32.0
-#define KNEE_CYILNDER_TRAVEL 12.0
+#define KNEE_CYLINDER_TRAVEL 12.0
 
 // ----- leg kinematics triangles -----
 // A is short static side
