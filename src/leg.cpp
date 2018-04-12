@@ -269,6 +269,7 @@ void Leg::_update_plan() {
       // if plan transition was invalid switch to hold mode
       // TODO notify that plan is invalid (to stop other legs)
       if (! valid_plan) {
+        estop->set_estop(ESTOP_HOLD);
         hold_position();
       };
 
@@ -311,6 +312,7 @@ void Leg::_update_plan() {
           thigh_joint->set_target_angle(a.thigh);
           knee_joint->set_target_angle(a.knee);
         } else {
+          estop->set_estop(ESTOP_HOLD);
           hold_position();
         };
         break;
@@ -324,6 +326,7 @@ void Leg::_update_plan() {
           thigh_joint->set_target_angle(target_position.y);
           knee_joint->set_target_angle(target_position.z);
         } else {
+          estop->set_estop(ESTOP_HOLD);
           hold_position();
         };
         break;
@@ -420,8 +423,8 @@ void Leg::hold_position() {
   // has immediate effect and overwrites next plan
   current_plan = next_plan;
   target_position = next_plan.linear;
-  // set last_target_point_generation_time TODO make configurable
-  last_target_point_generation_time = millis() - 21;
+  // set last_target_point_generation_time
+  last_target_point_generation_time = millis() - (_next_pid_seed_time + 1);
   // set joint targets to current values
   hip_joint->set_target_adc_value(target_position.x);
   thigh_joint->set_target_adc_value(target_position.y);
@@ -437,7 +440,7 @@ unsigned long Leg::get_next_pid_seed_time() {
 };
 
 void Leg::set_future_pid_seed_time(unsigned long future_time) {
-  _future_pid_seed_time;
+  _future_pid_seed_time = future_time;
 };
 
 unsigned long Leg::get_future_pid_seed_time() {

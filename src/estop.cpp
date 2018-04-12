@@ -4,11 +4,16 @@ EStop::EStop() {
   _estop = ESTOP_ON;
   _last_estop == ESTOP_ON;
   //pinMode(ESTOP_STATUS_PIN, OUTPUT);
+  _cb = NULL;
 };
 
 byte EStop::set_estop(byte severity) {
   _last_estop = _estop;
   _estop = severity;
+  // TODO call callback
+  if (_cb != NULL) {
+    (*_cb)(severity);
+  };
   /*
   if (_estop == ESTOP_OFF) {
     digitalWrite(ESTOP_STATUS_PIN, HIGH);
@@ -40,4 +45,8 @@ bool EStop::just_released() {
 
 void EStop::set_heartbeat() {
   _last_beat_time = millis();
+};
+
+void EStop::register_callback(estop_callback cb) {
+  _cb = cb;
 };

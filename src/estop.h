@@ -39,6 +39,11 @@
 #define HEARTBEAT_TIMEOUT 1000  // milliseconds
 
 
+extern "C" {
+  typedef void (*estop_callback) (byte severity);
+}
+
+
 class EStop {
   public:
     // TODO give this access to enable pins?
@@ -52,7 +57,10 @@ class EStop {
     bool just_released();
 
     void set_heartbeat();
+
+    void register_callback(estop_callback cb);
   private:
+    estop_callback _cb;
     unsigned long _last_beat_time;
     byte _estop;
     byte _last_estop;

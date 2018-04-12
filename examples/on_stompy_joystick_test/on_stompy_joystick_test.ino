@@ -74,6 +74,12 @@ void on_estop(CommandProtocol *cmd){
   }
 };
 
+void send_estop(byte severity) {
+  cmd.start_command(CMD_ESTOP);
+  cmd.add_arg((byte)(severity));
+  cmd.finish_command();
+};
+
 void on_pwm(CommandProtocol *cmd) {
   bool get = false;
   float hip_pwm = 0;
@@ -427,6 +433,8 @@ void on_dither(CommandProtocol *cmd) {
 
 void setup(){
   Serial.begin(9600);
+
+  leg->estop->register_callback(send_estop);
 
   com.register_protocol(0, cmd);
   cmd.register_callback(CMD_ESTOP, on_estop);
