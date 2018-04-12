@@ -332,6 +332,7 @@ void Leg::_update_plan() {
         break;
       case (PLAN_SENSOR_FRAME):
         // target position is in sensor units, set pid targets
+        // TODO check sensor limits, stop when out of range
         hip_joint->set_target_adc_value(target_position.x);
         thigh_joint->set_target_adc_value(target_position.y);
         knee_joint->set_target_adc_value(target_position.z);
