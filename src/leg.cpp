@@ -129,8 +129,6 @@ void Leg::set_leg_number(LEG_NUMBER leg) {
 };
 
 void Leg::update() {
-  // TODO check if this leg has a loaded calibration
-
   // if estop is active, disable all valves
   // need to get estop rising edges and falling edges
   if (estop->just_released()) {
@@ -156,6 +154,20 @@ void Leg::update() {
   thigh_joint->update();
   knee_joint->update();
   calf_sensor->update();
+
+  // check sensor out-of-range
+  // only check if (any pid is enable)
+  if (
+      hip_joint->pid_enabled() || thigh_joint->pid_enabled() ||
+      knee_joint->pid_enabled()) {
+    if (!(
+          hip_pot->adc_in_range() &&
+          thigh_pot->adc_in_range() &&
+          knee_pot->adc_in_range())) {
+      estop->set_estop(ESTOP_SENSOR_LIMIT);
+      hold_position();
+    };
+  };
 };
 
 void Leg::_update_plan() {

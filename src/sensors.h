@@ -110,6 +110,7 @@ class StringPot {
     void set_adc_max(float value);
     float get_adc_max();
     void set_adc_range(float min_value, float max_value);
+    bool adc_in_range();
 
     int update();
 

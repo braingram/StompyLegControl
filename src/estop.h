@@ -23,13 +23,11 @@
 
 #include "Arduino.h"
 
-//#define ESTOP_STATUS_PIN 13
-
 #define ESTOP_OFF 0
 #define ESTOP_SOFT 1
 #define ESTOP_HARD 2
-// a joint reached a limit and needs to 'hold'
 #define ESTOP_HOLD 3
+#define ESTOP_SENSOR_LIMIT 4
 
 #define ESTOP_ON 2
 #define ESTOP_HEARTBEAT 2

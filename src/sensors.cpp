@@ -139,6 +139,12 @@ int StringPot::update() {
   return STRING_POT_NO_SAMPLE;
 }
 
+bool StringPot::adc_in_range() {
+  if (_analog_sensor->get_adc_value() > ((LinearTransform *)_transform)->get_src_max()) return false;
+  if (_analog_sensor->get_adc_value() < ((LinearTransform *)_transform)->get_src_min()) return false;
+  return true;
+}
+
 
 /* ========================================================
  *                      CalfSensor
