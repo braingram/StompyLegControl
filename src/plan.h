@@ -29,7 +29,10 @@ struct PlanStruct {
   float speed;
   unsigned long start_time;
   bool active;
+  float t_matrix[4][4];  // row column
 };
 
+
+void prepare_plan(PlanStruct *plan);
 bool follow_plan(PlanStruct plan, Point3D current, Point3D* target, float dt);
 #endif

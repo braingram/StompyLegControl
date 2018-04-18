@@ -369,6 +369,7 @@ void Leg::compute_foot_position() {
 };
 
 void Leg::set_next_plan(PlanStruct new_plan) {
+  prepare_plan(&new_plan);
   next_plan = new_plan;
   next_plan.active = true;
 };
