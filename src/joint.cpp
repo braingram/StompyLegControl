@@ -6,6 +6,7 @@ Joint::Joint(Valve* valve, StringPot* pot, JointAngleTransform* angle_transform,
   _pot = pot;
   _angle_transform = angle_transform;
   _pid = pid;
+  _pid_output = 0;
   _min_pid_output = 0;
   disable_pid();
 
