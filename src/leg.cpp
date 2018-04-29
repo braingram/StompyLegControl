@@ -121,10 +121,12 @@ void Leg::set_leg_number(LEG_NUMBER leg) {
       break;
   };
   switch (leg_number) {
-    case (LEG_NUMBER::FL):
-    case (LEG_NUMBER::ML):
-    case (LEG_NUMBER::RL):
+    case (LEG_NUMBER::FR):
+    case (LEG_NUMBER::MR):
+    case (LEG_NUMBER::RR):
       // reverse calf sensor
+      calf_sensor->set_slope(CALF_SENSOR_RIGHT_SLOPE);
+      calf_sensor->set_offset(CALF_SENSOR_RIGHT_OFFSET);
       break;
   };
 };
