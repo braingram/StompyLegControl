@@ -117,6 +117,7 @@ void Leg::set_leg_number(LEG_NUMBER leg) {
     case (LEG_NUMBER::ML):
       hip_angle_transform->set_b(HIP_B_MIDDLE);
       hip_angle_transform->set_zero(HIP_ZERO_ANGLE_MIDDLE);
+      hip_pot->set_length_max(HIP_CYLINDER_MAX_LENGTH);
       break;
   };
   switch (leg_number) {

@@ -3,8 +3,10 @@
 
 // ----------- Hip cylinder --------
 #define HIP_CYLINDER_MIN_LENGTH 16.0
-#define HIP_CYLINDER_MAX_LENGTH 24.0
-#define HIP_CYLINDER_TRAVEL 8.0
+#define HIP_CYLINDER_MAX_LENGTH_MIDDLE 24.0
+#define HIP_CYLINDER_MAX_LENGTH 23.153837
+#define HIP_CYLINDER_TRAVEL_MIDDLE 8.0
+#define HIP_CYLINDER_TRAVEL 7.153837
 
 // ----------- Thigh cylinder --------
 #define THIGH_CYLINDER_MIN_LENGTH 24.0
@@ -33,9 +35,13 @@
 // ----- 'zero' angles in radians -----
 // hip 0 is with cylinder at half travel
 // when front/rear hip cylinder is at 19.80315 hip is at zero
-#define HIP_ZERO_ANGLE 1.4228032681870073
+//#define HIP_ZERO_ANGLE 1.4228032681870073
+// when front/rear hip cylinder is at 19.8173 hip is at zero
+#define HIP_ZERO_ANGLE 1.4895289069969002
 // when middle hip cylinder is at 20.314961 hip is at zero
-#define HIP_ZERO_ANGLE_MIDDLE 1.4997925172727815
+//#define HIP_ZERO_ANGLE_MIDDLE 1.4997925172727815
+// when middle hip cylinder is at 20.30 hip is at zero
+#define HIP_ZERO_ANGLE_MIDDLE 1.4975224344157239
 // thigh 0 is with cylinder fully retracted
 #define THIGH_ZERO_ANGLE 0.33189216561617446
 // knee 0 is with cylinder fully extended
@@ -47,10 +53,10 @@
 // BASE_BETA = PI - THIGH_REST_ANGLE - KNEE_REST_ANGLE
 #define BASE_BETA 0.22670942831590035
 
-#define HIP_MIN_ANGLE -0.70616022
-#define HIP_MAX_ANGLE 0.70616022
-#define HIP_MIN_ANGLE_MIDDLE -0.70616022 // TODO check these
-#define HIP_MAX_ANGLE_MIDDLE 0.70616022
+#define HIP_MIN_ANGLE -0.56583574349656163
+#define HIP_MAX_ANGLE 0.56583574349656163 
+#define HIP_MIN_ANGLE_MIDDLE -0.64071036840711837
+#define HIP_MAX_ANGLE_MIDDLE 0.64071036840711837
 #define THIGH_MIN_ANGLE 0.0
 #define THIGH_MAX_ANGLE 1.5708
 #define KNEE_MIN_ANGLE -2.3736

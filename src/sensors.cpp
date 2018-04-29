@@ -127,6 +127,27 @@ void StringPot::set_adc_range(float min_value, float max_value) {
   set_adc_max(max_value);
 }
 
+void StringPot::set_length_min(float value) {
+  ((LinearTransform *)_transform)->set_dst_min(value);
+}
+
+float StringPot::get_length_min() {
+  return ((LinearTransform *)_transform)->get_dst_min();
+}
+
+void StringPot::set_length_max(float value) {
+  ((LinearTransform *)_transform)->set_dst_max(value);
+}
+
+float StringPot::get_length_max() {
+  return ((LinearTransform *)_transform)->get_dst_max();
+}
+
+void StringPot::set_length_range(float min_value, float max_value) {
+  set_length_min(min_value);
+  set_length_max(max_value);
+}
+
 int StringPot::update() {
   if (_sample_timer > STRING_POT_SAMPLE_TIME) {
     _analog_sensor->sample();
