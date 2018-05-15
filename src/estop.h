@@ -51,10 +51,13 @@ class EStop {
     byte set_estop(byte severity);
     byte get_estop();
     bool is_stopped();
+    bool just_changed();
     bool just_stopped();
     bool just_released();
 
     void set_heartbeat();
+    void check_heartbeat();
+    bool valid_heartbeat();
 
     void register_callback(estop_callback cb);
   private:

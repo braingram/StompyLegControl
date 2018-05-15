@@ -60,24 +60,25 @@ void on_heartbeat(CommandProtocol *cmd) {
 
 void on_estop(CommandProtocol *cmd){
   byte severity = ESTOP_DEFAULT;
-  bool get = false;
   if (cmd->has_arg()) {
     severity = cmd->get_arg<byte>();
+    leg->estop->set_estop(severity);
   } else {
-    get = true;
-  }
-  leg->estop->set_estop(severity);
-  if (get) {
     cmd->start_command(CMD_ESTOP);
-    cmd->add_arg((byte)(severity));
+    cmd->add_arg((byte)(leg->estop->get_estop()));
     cmd->finish_command();
   }
 };
 
 void send_estop(byte severity) {
-  cmd.start_command(CMD_ESTOP);
-  cmd.add_arg((byte)(severity));
-  cmd.finish_command();
+  //if (!leg->estop->valid_heartbeat()) return;
+  if (
+      leg->estop->valid_heartbeat() ||
+      leg->estop->just_changed()) {
+    cmd.start_command(CMD_ESTOP);
+    cmd.add_arg((byte)(severity));
+    cmd.finish_command();
+  };
 };
 
 void on_pwm(CommandProtocol *cmd) {
@@ -461,6 +462,7 @@ void setup(){
 
 
 void check_report() {
+  if (!leg->estop->valid_heartbeat()) return;
   if (report_timer > report_time) {
     /*
     cmd.start_command(CMD_LOOP_TIME);

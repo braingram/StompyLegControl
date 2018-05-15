@@ -9,7 +9,6 @@ EStop::EStop() {
 byte EStop::set_estop(byte severity) {
   _last_estop = _estop;
   _estop = severity;
-  // TODO call callback
   if (_cb != NULL) {
     (*_cb)(severity);
   };
@@ -17,14 +16,19 @@ byte EStop::set_estop(byte severity) {
 };
 
 byte EStop::get_estop() {
-  if ((millis() - _last_beat_time) > (unsigned long)(HEARTBEAT_TIMEOUT)) {
-    set_estop(ESTOP_HEARTBEAT);
-  };
+  //if ((millis() - _last_beat_time) > (unsigned long)(HEARTBEAT_TIMEOUT)) {
+  //if (!valid_heartbeat()) {
+  //  set_estop(ESTOP_HEARTBEAT);
+  //};
   return _estop;
 };
 
 bool EStop::is_stopped() {
   return get_estop() != ESTOP_OFF;
+};
+
+bool EStop::just_changed() {
+  return (get_estop() != _last_estop);
 };
 
 bool EStop::just_stopped() {
@@ -33,6 +37,19 @@ bool EStop::just_stopped() {
 
 bool EStop::just_released() {
   return ((get_estop() != ESTOP_OFF) && (_last_estop == ESTOP_OFF));
+};
+
+void EStop::check_heartbeat() {
+  if (!valid_heartbeat()) {
+    set_estop(ESTOP_HEARTBEAT);
+  };
+};
+
+bool EStop::valid_heartbeat() {
+  if ((millis() - _last_beat_time) > (unsigned long)(HEARTBEAT_TIMEOUT)) {
+    return false;
+  };
+  return true;
 };
 
 void EStop::set_heartbeat() {

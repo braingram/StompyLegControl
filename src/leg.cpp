@@ -134,6 +134,7 @@ void Leg::set_leg_number(LEG_NUMBER leg) {
 void Leg::update() {
   // if estop is active, disable all valves
   // need to get estop rising edges and falling edges
+  estop->check_heartbeat();
   if (estop->just_released()) {
     // reset pid values, set targets to current sensor values
     hold_position();
