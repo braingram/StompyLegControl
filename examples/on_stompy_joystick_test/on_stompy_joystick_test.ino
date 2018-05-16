@@ -5,6 +5,7 @@ Comando com = Comando(Serial);
 CommandProtocol cmd = CommandProtocol(com);
 
 Leg* leg = new Leg();
+byte last_estop_severity = 255;
 
 struct ReportFlags {
   bool adc: 1;
@@ -74,10 +75,11 @@ void send_estop(byte severity) {
   //if (!leg->estop->valid_heartbeat()) return;
   if (
       leg->estop->valid_heartbeat() ||
-      leg->estop->just_changed()) {
+      (severity != last_estop_severity)) {
     cmd.start_command(CMD_ESTOP);
     cmd.add_arg((byte)(severity));
     cmd.finish_command();
+    last_estop_severity = severity; 
   };
 };
 
