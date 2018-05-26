@@ -45,6 +45,10 @@ void FilteredAnalogSensor::sample() {
   _sample_index = (_sample_index + 1) % N_FILTER_SAMPLES;
 }
 
+int FilteredAnalogSensor::get_index() {
+  return _sample_index;
+}
+
 int filter_sort(const void *a, const void *b) {
   return *((int *)a) - *((int *)b);
 }
@@ -149,12 +153,13 @@ void StringPot::set_length_range(float min_value, float max_value) {
 }
 
 int StringPot::update() {
-  if (_sample_timer > STRING_POT_SAMPLE_TIME) {
+  if (_sample_timer >= STRING_POT_SAMPLE_TIME) {
     _analog_sensor->sample();
     _sample_timer = 0;
-    _sample_count = (_sample_count + 1) % N_FILTER_SAMPLES;
-    if (_sample_count == 0) {
+    //digitalWrite(DEBUG_PIN_2, !digitalRead(DEBUG_PIN_2));
+    if (_analog_sensor->get_index() == 0) {
       _analog_sensor->filter();
+      //digitalWrite(DEBUG_PIN_1, !digitalRead(DEBUG_PIN_1));
       return STRING_POT_READY;
     };
   };
@@ -204,12 +209,13 @@ unsigned int CalfSensor::load_to_adc_value(float load) {
 
 int CalfSensor::update() {
   // TODO same sample time/return as string pots?
-  if (_sample_timer > STRING_POT_SAMPLE_TIME) {
+  if (_sample_timer >= STRING_POT_SAMPLE_TIME) {
     _analog_sensor->sample();
     _sample_timer = 0;
-    _sample_count = (_sample_count + 1) % N_FILTER_SAMPLES;
-    if (_sample_count == 0) {
+    //digitalWrite(DEBUG_PIN_2, !digitalRead(DEBUG_PIN_2));
+    if (_analog_sensor->get_index() == 0) {
       _analog_sensor->filter();
+      //digitalWrite(DEBUG_PIN_1, !digitalRead(DEBUG_PIN_1));
       return STRING_POT_READY;
     };
   };

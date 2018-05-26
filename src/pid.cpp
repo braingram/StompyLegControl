@@ -5,7 +5,8 @@ PID::PID(float p, float i, float d) {
   _i = i;
   _d = d;
 
-  _error_threshold = 1E10;  // default to large (off)
+  //_error_threshold = 1E10;  // default to large (off)
+  _error_threshold = FOLLOWING_ERROR_THRESHOLD;  // default to large (off)
   _setpoint = 0;
 
   set_output_limits(0, 255);

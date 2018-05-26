@@ -18,6 +18,7 @@
  */
 #include <ADC.h>
 #include "transforms.h"
+#include "stompy_pins.h"
 
 // filter 10 most recent adc samples
 #define N_FILTER_SAMPLES 10
@@ -29,7 +30,8 @@
 #define STRING_POT_READY 1
 #define STRING_POT_NO_SAMPLE 0
 
-#define STRING_POT_SAMPLE_TIME 2  // milliseconds
+//#define STRING_POT_SAMPLE_TIME 2  // milliseconds
+#define STRING_POT_SAMPLE_TIME 250  // microseconds
 
 /* ========================================================
  *                      Analog Sensor
@@ -68,6 +70,8 @@ class FilteredAnalogSensor : public AnalogSensor {
     unsigned int read_adc();  // filter samples and return value
 
     unsigned int get_adc_value();  // return pre-filtered value
+
+    int get_index();
 
   protected:
     unsigned int _adc_value;
@@ -125,8 +129,9 @@ class StringPot {
     Transform* _transform;
     FilteredAnalogSensor* _analog_sensor;
     //float _length; // TODO cache length?
-    elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
-    int _sample_count;
+    //elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
+    elapsedMicros _sample_timer;  // run at 500 Hz, 2 ms
+    // int _sample_count;
     // elapsedMillis _filter_timer;  // run at 50 Hz, 20 ms
 };
 
@@ -157,8 +162,9 @@ class CalfSensor {
     CalfLoadTransform* _transform;
     FilteredAnalogSensor* _analog_sensor;
     //float _load; // TODO cache load?
-    elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
-    int _sample_count;
+    //elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
+    elapsedMicros _sample_timer;  // run at 500 Hz, 2 ms
+    // int _sample_count;
 };
 
 

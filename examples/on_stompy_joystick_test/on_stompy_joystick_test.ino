@@ -16,7 +16,7 @@ struct ReportFlags {
   bool loop_time: 1;
 };
 
-unsigned long report_time = 20;
+unsigned long report_time = 50;
 elapsedMillis report_timer;
 ReportFlags to_report = {
   .adc = true,
@@ -466,6 +466,8 @@ void on_following_error_threshold(CommandProtocol *cmd) {
 
 
 void setup(){
+  //pinMode(11, OUTPUT);
+  //pinMode(14, OUTPUT);
   Serial.begin(9600);
 
   leg->estop->register_callback(send_estop);
