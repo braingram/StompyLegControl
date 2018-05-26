@@ -5,6 +5,7 @@ PID::PID(float p, float i, float d) {
   _i = i;
   _d = d;
 
+  _error_threshold = 1E10;  // default to large (off)
   _setpoint = 0;
 
   set_output_limits(0, 255);
@@ -38,6 +39,18 @@ float PID::get_output_min() {
 float PID::get_output_max() {
   return _max_output;
 }
+
+void PID::set_error_threshold(float error_threshold) {
+  _error_threshold = error_threshold;
+};
+
+float PID::get_error_threshold() {
+  return _error_threshold;
+};
+
+bool PID::error_ok() {
+  return abs(get_error()) < _error_threshold;
+};
 
 float PID::update(float input) {
   unsigned long t = millis();

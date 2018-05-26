@@ -171,6 +171,15 @@ void Leg::update() {
       estop->set_estop(ESTOP_SENSOR_LIMIT);
       hold_position();
     };
+    //check following errors against thresholds
+    // TODO only check when updated
+    if (!(
+          hip_pid->error_ok() &&
+          thigh_pid->error_ok() &&
+          knee_pid->error_ok())) {
+      estop->set_estop(ESTOP_FOLLOWING_ERROR);
+      hold_position();
+    };
   };
 };
 
@@ -199,8 +208,6 @@ void Leg::_update_plan() {
               case (PLAN_BODY_FRAME):
                 break;
               case (PLAN_JOINT_FRAME):
-                // xyz -> angles
-                // TODO check return value, stop on false
                 valid_plan = kinematics->xyz_to_angles(
                   target_position, &a);
                 target_position.x = a.hip;
@@ -208,8 +215,6 @@ void Leg::_update_plan() {
                 target_position.z = a.knee;
                 break;
               case (PLAN_SENSOR_FRAME):
-                // xyz -> angles -> sensor
-                // TODO check return value, stop on false
                 valid_plan = kinematics->xyz_to_angles(
                   target_position, &a);
                 target_position.x = hip_pot->length_to_adc_value(
@@ -230,7 +235,6 @@ void Leg::_update_plan() {
                 a.hip = target_position.x;
                 a.thigh = target_position.y;
                 a.knee = target_position.z;
-                // TODO check return value, stop on false
                 valid_plan = kinematics->angles_to_xyz(a, &target_position);
                 break;
               case (PLAN_SENSOR_FRAME):
@@ -262,7 +266,6 @@ void Leg::_update_plan() {
                 a.knee = knee_angle_transform->length_to_angle(
                     knee_pot->adc_value_to_length(
                       target_position.z));
-                // TODO check return value, stop on false
                 valid_plan = kinematics->angles_to_xyz(a, &target_position);
                 break;
               case (PLAN_JOINT_FRAME):
@@ -283,7 +286,6 @@ void Leg::_update_plan() {
         };
       };
       // if plan transition was invalid switch to hold mode
-      // TODO notify that plan is invalid (to stop other legs)
       if (! valid_plan) {
         estop->set_estop(ESTOP_HOLD);
         hold_position();
@@ -299,16 +301,14 @@ void Leg::_update_plan() {
       current_plan = next_plan;
       next_plan.active = false;
  
-      // make sure a new point gets generated TODO make configurable
+      // make sure a new point gets generated
       last_target_point_generation_time = millis() - (_next_pid_seed_time + 1);
     };
   };
 
   // check if a new target position should be generated
-  // TODO make time configurable
   if (millis() - last_target_point_generation_time > _next_pid_seed_time) {
     // generate next target point TODO check output, stop on false
-    // TODO make dt configurable
     follow_plan(
         current_plan, target_position, &target_position,
         0.001 * _future_pid_seed_time);
@@ -316,9 +316,7 @@ void Leg::_update_plan() {
 
     // set joint targets
     switch (current_plan.frame) {
-      case (PLAN_BODY_FRAME):  // TODO handle this in python
-        // target is xyz in body coordinates
-        break;
+      //case (PLAN_BODY_FRAME):  // handled in python
       case (PLAN_LEG_FRAME):
         // target position is xyz
         // convert to angles, then to sensor units
@@ -333,7 +331,6 @@ void Leg::_update_plan() {
         };
         break;
       case (PLAN_JOINT_FRAME):
-        // TODO check angles, stop when out of range
         // target position are joint angles
         // convert to sensor units, set pid
         if (kinematics->angles_in_limits(

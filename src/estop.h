@@ -28,6 +28,7 @@
 #define ESTOP_HARD 2
 #define ESTOP_HOLD 3
 #define ESTOP_SENSOR_LIMIT 4
+#define ESTOP_FOLLOWING_ERROR 5
 
 #define ESTOP_ON 2
 #define ESTOP_HEARTBEAT 2

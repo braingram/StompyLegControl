@@ -20,6 +20,10 @@ class PID {
     float get_output_min();
     float get_output_max();
 
+    void set_error_threshold(float error_threshold);
+    float get_error_threshold();
+    bool error_ok();
+
     void set_setpoint(float setpoint);
     float get_setpoint();
 
@@ -45,6 +49,7 @@ class PID {
 
     float _i_term;
 
+    float _error_threshold;
     float _min_output;
     float _max_output;
 

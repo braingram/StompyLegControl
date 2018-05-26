@@ -44,6 +44,7 @@ ReportFlags to_report = {
 #define CMD_PID_SEED_TIME 11
 #define CMD_RESET_PIDS 12
 #define CMD_DITHER 13
+#define CMD_FOLLOWING_ERROR_THRESHOLD 14
 
 #define CMD_REPORT_ADC 21
 #define CMD_REPORT_PID 22
@@ -433,6 +434,36 @@ void on_dither(CommandProtocol *cmd) {
   valve->set_dither_amp(dither_amp);
 }
 
+void on_following_error_threshold(CommandProtocol *cmd) {
+  // joint index, threshold
+  if (!cmd->has_arg()) return;
+  byte ji = cmd->get_arg<byte>();
+  if (ji > 2) return;
+  PID* pid;
+  switch (ji) {
+      case 0:
+          pid = leg->hip_pid;
+          break;
+      case 1:
+          pid = leg->thigh_pid;
+          break;
+      case 2:
+          pid = leg->knee_pid;
+          break;
+      default:
+          return;
+  }
+  if (!cmd->has_arg()) {
+    cmd->start_command(CMD_FOLLOWING_ERROR_THRESHOLD);
+    cmd->add_arg(ji);
+    cmd->add_arg(pid->get_error_threshold());
+    cmd->finish_command();
+    return;
+  };
+  float error_threshold = cmd->get_arg<float>();
+  pid->set_error_threshold(error_threshold);
+}
+
 
 void setup(){
   Serial.begin(9600);
@@ -454,6 +485,7 @@ void setup(){
   cmd.register_callback(CMD_PID_SEED_TIME, on_pid_seed_time);
   cmd.register_callback(CMD_RESET_PIDS, on_reset_pids);
   cmd.register_callback(CMD_DITHER, on_dither);
+  cmd.register_callback(CMD_FOLLOWING_ERROR_THRESHOLD, on_following_error_threshold);
   cmd.register_callback(CMD_REPORT_ADC, on_report_adc);
   cmd.register_callback(CMD_REPORT_PWM, on_report_pwm);
   cmd.register_callback(CMD_REPORT_PID, on_report_pid);
