@@ -151,6 +151,7 @@ void StringPot::set_length_range(float min_value, float max_value) {
 int StringPot::update() {
   if (_sample_timer > STRING_POT_SAMPLE_TIME) {
     _analog_sensor->sample();
+    _sample_timer = 0;
     _sample_count = (_sample_count + 1) % N_FILTER_SAMPLES;
     if (_sample_count == 0) {
       _analog_sensor->filter();
@@ -205,6 +206,7 @@ int CalfSensor::update() {
   // TODO same sample time/return as string pots?
   if (_sample_timer > STRING_POT_SAMPLE_TIME) {
     _analog_sensor->sample();
+    _sample_timer = 0;
     _sample_count = (_sample_count + 1) % N_FILTER_SAMPLES;
     if (_sample_count == 0) {
       _analog_sensor->filter();
