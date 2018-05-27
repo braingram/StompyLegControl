@@ -107,8 +107,8 @@
 #define KNEE_PID_MIN -8192
 #define KNEE_PID_MAX 8192
 
-#define PID_SEED_TIME 20
-#define PID_FUTURE_TIME 25
+#define PID_SEED_TIME 4
+#define PID_FUTURE_TIME 4
 
 #define DITHER_AMP 0  // 0% by default
 #define DITHER_TIME 4000  // 4 ms on 4 off = 8 ms period = 125 Hz
@@ -122,6 +122,6 @@
 #define CALF_SENSOR_RIGHT_OFFSET 2.5919518638525259
 #define CALF_INCHES_TO_LBS 600.0
 
-#define FOLLOWING_ERROR_THRESHOLD 3000
+#define FOLLOWING_ERROR_THRESHOLD 6000
 
 #endif
