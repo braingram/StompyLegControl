@@ -76,7 +76,8 @@ bool follow_plan(PlanStruct plan, Point3D current, Point3D* target, float dt) {
     target->z = current.z + target->z * ss;
     return true;
   }
-  if (plan.mode == PLAN_ARC_MODE) {
+  if ((plan.mode == PLAN_ARC_MODE) ||
+      (plan.mode == PLAN_MATRIX_MODE)) {
     target->x = (
         current.x * plan.t_matrix[0][0] +
         current.y * plan.t_matrix[0][1] +

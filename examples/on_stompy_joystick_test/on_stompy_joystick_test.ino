@@ -120,27 +120,42 @@ void on_pwm(CommandProtocol *cmd) {
 
 void on_plan(CommandProtocol *cmd) {
   // mode, frame, linear(xyz), angular(xyz), speed, start_time
-  if (!cmd->has_arg()) {
-    // return current plan
-    return;
-  };
+  // mode, frame, type, ..., speed, start_time
+  if (!cmd->has_arg()) return;
   PlanStruct new_plan;
   new_plan.mode = cmd->get_arg<byte>();
   if (!cmd->has_arg()) return;
   new_plan.frame = cmd->get_arg<byte>();
   if (!cmd->has_arg()) return;
-  new_plan.linear.x = cmd->get_arg<float>();
-  if (!cmd->has_arg()) return;
-  new_plan.linear.y = cmd->get_arg<float>();
-  if (!cmd->has_arg()) return;
-  new_plan.linear.z = cmd->get_arg<float>();
-  if (!cmd->has_arg()) return;
-  new_plan.angular.x = cmd->get_arg<float>();
-  if (!cmd->has_arg()) return;
-  new_plan.angular.y = cmd->get_arg<float>();
-  if (!cmd->has_arg()) return;
-  new_plan.angular.z = cmd->get_arg<float>();
-  if (!cmd->has_arg()) return;
+  switch (new_plan.mode) {
+    case PLAN_VELOCITY_MODE:
+    case PLAN_TARGET_MODE:
+      // read 3 floats
+      new_plan.linear.x = cmd->get_arg<float>();
+      if (!cmd->has_arg()) return;
+      new_plan.linear.y = cmd->get_arg<float>();
+      if (!cmd->has_arg()) return;
+      new_plan.linear.z = cmd->get_arg<float>();
+      if (!cmd->has_arg()) return;
+    case PLAN_ARC_MODE:
+      // read 3 more floats
+      new_plan.angular.x = cmd->get_arg<float>();
+      if (!cmd->has_arg()) return;
+      new_plan.angular.y = cmd->get_arg<float>();
+      if (!cmd->has_arg()) return;
+      new_plan.angular.z = cmd->get_arg<float>();
+      if (!cmd->has_arg()) return;
+      break;
+    case PLAN_MATRIX_MODE:
+      // read 9 floats
+      for (int j=0; j<3; j++) {
+        for (int i=0; i<3; i++) {
+          new_plan.t_matrix[i][j] = cmd->get_arg<float>();
+          if (!cmd->has_arg()) return;
+        };
+      };
+      break;
+  }
   new_plan.speed = cmd->get_arg<float>();
   if (cmd->has_arg()) {
     new_plan.start_time = cmd->get_arg<float>();
