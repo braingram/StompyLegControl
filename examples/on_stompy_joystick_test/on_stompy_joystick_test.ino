@@ -137,7 +137,14 @@ void on_plan(CommandProtocol *cmd) {
       if (!cmd->has_arg()) return;
       new_plan.linear.z = cmd->get_arg<float>();
       if (!cmd->has_arg()) return;
+      break;
     case PLAN_ARC_MODE:
+      new_plan.linear.x = cmd->get_arg<float>();
+      if (!cmd->has_arg()) return;
+      new_plan.linear.y = cmd->get_arg<float>();
+      if (!cmd->has_arg()) return;
+      new_plan.linear.z = cmd->get_arg<float>();
+      if (!cmd->has_arg()) return;
       // read 3 more floats
       new_plan.angular.x = cmd->get_arg<float>();
       if (!cmd->has_arg()) return;
