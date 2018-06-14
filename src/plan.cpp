@@ -34,6 +34,10 @@ void prepare_plan(PlanStruct *plan) {
       -plan->linear.y*sx*cy +
       -plan->linear.z*cx*cy +
       plan->linear.z);
+    plan->t_matrix[3][0] = 0.0;
+    plan->t_matrix[3][1] = 0.0;
+    plan->t_matrix[3][2] = 0.0;
+    plan->t_matrix[3][3] = 1.0;
   };
 };
 

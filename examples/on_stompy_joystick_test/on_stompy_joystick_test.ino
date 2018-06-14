@@ -154,9 +154,9 @@ void on_plan(CommandProtocol *cmd) {
       if (!cmd->has_arg()) return;
       break;
     case PLAN_MATRIX_MODE:
-      // read 9 floats
-      for (int j=0; j<3; j++) {
-        for (int i=0; i<3; i++) {
+      // read 16 floats
+      for (int j=0; j<4; j++) {
+        for (int i=0; i<4; i++) {
           new_plan.t_matrix[i][j] = cmd->get_arg<float>();
           if (!cmd->has_arg()) return;
         };
@@ -165,7 +165,7 @@ void on_plan(CommandProtocol *cmd) {
   }
   new_plan.speed = cmd->get_arg<float>();
   if (cmd->has_arg()) {
-    new_plan.start_time = cmd->get_arg<float>();
+    new_plan.start_time = cmd->get_arg<unsigned long>();
   } else {
     new_plan.start_time = millis();
   }
