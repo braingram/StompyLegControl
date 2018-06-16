@@ -3,6 +3,8 @@
 
 Comando com = Comando(Serial);
 CommandProtocol cmd = CommandProtocol(com);
+TextProtocol text = TextProtocol(com);
+//#define DEBUG_TEXT
 
 Leg* leg = new Leg();
 byte last_estop_severity = 255;
@@ -55,6 +57,9 @@ ReportFlags to_report = {
 
 void on_heartbeat(CommandProtocol *cmd) {
   leg->estop->set_heartbeat();
+#ifdef DEBUG_TEXT
+  text.print("hb\n");
+#endif
   // send heartbeat back
   cmd->start_command(CMD_HEARTBEAT);
   cmd->finish_command();
@@ -121,11 +126,20 @@ void on_pwm(CommandProtocol *cmd) {
 void on_plan(CommandProtocol *cmd) {
   // mode, frame, linear(xyz), angular(xyz), speed, start_time
   // mode, frame, type, ..., speed, start_time
+#ifdef DEBUG_TEXT
+  text.print("on_plan\n");
+#endif
   if (!cmd->has_arg()) return;
   PlanStruct new_plan;
   new_plan.mode = cmd->get_arg<byte>();
+#ifdef DEBUG_TEXT
+  text.print("Mode:"); text.print(String(new_plan.mode)); text.print("\n");
+#endif
   if (!cmd->has_arg()) return;
   new_plan.frame = cmd->get_arg<byte>();
+#ifdef DEBUG_TEXT
+  text.print("Frame:"); text.print(String(new_plan.frame)); text.print("\n");
+#endif
   if (!cmd->has_arg()) return;
   switch (new_plan.mode) {
     case PLAN_VELOCITY_MODE:
@@ -154,16 +168,34 @@ void on_plan(CommandProtocol *cmd) {
       if (!cmd->has_arg()) return;
       break;
     case PLAN_MATRIX_MODE:
-      // read 16 floats
-      for (int j=0; j<4; j++) {
-        for (int i=0; i<4; i++) {
+      // read 12 floats
+#ifdef DEBUG_TEXT
+      text.print("New Matrix\n");
+#endif
+      for (int i=0; i<3; i++) {
+        for (int j=0; j<4; j++) {
           new_plan.t_matrix[i][j] = cmd->get_arg<float>();
+#ifdef DEBUG_TEXT
+          text.print(String(new_plan.t_matrix[i][j]));
+#endif
           if (!cmd->has_arg()) return;
         };
+#ifdef DEBUG_TEXT
+        text.print("\n");
+#endif
       };
+      new_plan.t_matrix[3][0] = 0.;
+      new_plan.t_matrix[3][1] = 0.;
+      new_plan.t_matrix[3][2] = 0.;
+      new_plan.t_matrix[3][3] = 1.;
       break;
   }
   new_plan.speed = cmd->get_arg<float>();
+#ifdef DEBUG_TEXT
+  text.print("Speed:");
+  text.print(String(new_plan.speed));
+  text.print("\n");
+#endif
   if (cmd->has_arg()) {
     new_plan.start_time = cmd->get_arg<unsigned long>();
   } else {
@@ -516,6 +548,8 @@ void setup(){
   cmd.register_callback(CMD_REPORT_XYZ, on_report_xyz);
   cmd.register_callback(CMD_REPORT_ANGLES, on_report_angles);
   cmd.register_callback(CMD_REPORT_LOOP_TIME, on_report_loop_time);
+
+  com.register_protocol(1, text);
 }
 
 
