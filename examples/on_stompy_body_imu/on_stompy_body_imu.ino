@@ -1,22 +1,30 @@
 #include <comando.h>
 
 // imu
+//#define ENABLE_IMU
+#ifdef ENABLE_IMU
 #include <NXPMotionSense.h>
 #include <Wire.h>
 #include <EEPROM.h>
+#endif
 
 // thermocouple
+//#define ENABLE_TEMP
+#ifdef ENABLE_TEMP
 #include <Adafruit_MAX31856.h>
 #define TC_CS 10
 #define TC_DI 11
 #define TC_DO 12
 #define TC_CLK 13
+#endif
 
 
 // 3000 / 1024.
+#define ENABLE_PRESSURE
 #define PSI_PER_TICK 2.9296875
 #define FEED_PRESSURE_PIN 1
 
+#define ENABLE_RPM
 #define ENGINE_RPM_PIN 0
 
 Comando com = Comando(Serial);
@@ -25,9 +33,15 @@ TextProtocol text = TextProtocol(com);
 //#define DEBUG_TEXT
 
 #define NAME 0  // imu
+byte name = NAME;
+
+#define HEARTBEAT_TIMEOUT 1000  // ms
+bool allow_reports = false;
+elapsedMillis hb_timer;
 
 #define CMD_NAME 0
-#define CMD_FEED_PRESSURE 1  // analog: float
+#define CMD_HEARTBEAT 1
+#define CMD_FEED_PRESSURE 2  // analog: float
 
 #define CMD_FEED_OIL_TEMP 5  // serial: float
 #define CMD_RETURN_OIL_TEMP 6  // serial: float
@@ -71,7 +85,8 @@ void BodySensor::_set_period(CommandProtocol *cmd) {
 void BodySensor::check() {
   if (period == 0) return;
   if (_timer < period) return;
-  report_sensor();
+  if (allow_reports) report_sensor();
+  _timer = 0;
 };
 
 
@@ -148,7 +163,7 @@ void RPMBodySensor::report_sensor() {
   _cmd->finish_command();
 };
 
-
+#ifdef ENABLE_IMU
 class IMUBodySensor : public BodySensor {
   public:
     IMUBodySensor(CommandProtocol *cmd, byte index);
@@ -191,7 +206,9 @@ void IMUBodySensor::report_sensor() {
   _cmd->add_arg(filter.getYaw());
   _cmd->finish_command();
 };
+#endif
 
+#ifdef ENABLE_TEMP
 class TemperatureBodySensor : public BodySensor {
   public:
     TemperatureBodySensor(CommandProtocol *cmd, byte index, byte cs_pin);
@@ -210,6 +227,7 @@ void TemperatureBodySensor::report_sensor() {
   _cmd->add_arg(tc->readThermocoupleTemperature());
   _cmd->finish_command();
 };
+#endif
 
 // ------------------------------------------------
 
@@ -223,12 +241,15 @@ void set_analog_body_sensor_period(CommandProtocol *cmd) {
 };
 */
 
+#ifdef ENABLE_PRESSURE
 PressureBodySensor *feed_pressure;
 
 void set_feed_pressure_period(CommandProtocol *cmd) {
   feed_pressure->_set_period(cmd);
 };
+#endif
 
+#ifdef ENABLE_RPM
 RPMBodySensor *rpm;
 
 void set_rpm_period(CommandProtocol *cmd) {
@@ -238,42 +259,80 @@ void set_rpm_period(CommandProtocol *cmd) {
 void rpm_tick() {
   rpm->tick();
 };
+#endif
 
+#ifdef ENABLE_IMU
 IMUBodySensor *imu;
 
 void set_imu_period(CommandProtocol *cmd) {
   imu->_set_period(cmd);
 };
+#endif
 
+#ifdef ENABLE_TEMP
 TemperatureBodySensor *feed_temp;
 
 void set_feed_temp_period(CommandProtocol *cmd) {
   feed_temp->_set_period(cmd);
+};
+#endif
+
+void on_name(CommandProtocol *cmd) {
+  cmd->start_command(CMD_NAME);
+  cmd->add_arg(name);
+  cmd->finish_command();
+};
+
+void on_heartbeat(CommandProtocol *cmd) {
+  hb_timer = 0;
+  allow_reports = true;
 };
 
 void setup(){
   Serial.begin(9600);
   //test = new AnalogBodySensor(&cmd, 1, 1);
   //cmd.register_callback(test->_index, set_analog_body_sensor_period);
+  com.register_protocol(0, cmd);
+  cmd.register_callback(CMD_NAME, on_name);
+  cmd.register_callback(CMD_HEARTBEAT, on_heartbeat);
+#ifdef ENABLE_PRESSURE
   feed_pressure = new PressureBodySensor(
     &cmd, CMD_FEED_PRESSURE, FEED_PRESSURE_PIN);
-  rpm = new RPMBodySensor(&cmd, CMD_ENGINE_RPM, ENGINE_RPM_PIN);
-  imu = new IMUBodySensor(&cmd, CMD_IMU_HEADING);
-  feed_temp = new TemperatureBodySensor(&cmd, CMD_FEED_OIL_TEMP, TC_CS);
-
   cmd.register_callback(feed_pressure->_index, set_feed_pressure_period);
+#endif
+#ifdef ENABLE_RPM
+  rpm = new RPMBodySensor(&cmd, CMD_ENGINE_RPM, ENGINE_RPM_PIN);
   cmd.register_callback(rpm->_index, set_rpm_period);
-  cmd.register_callback(imu->_index, set_imu_period);
-  cmd.register_callback(feed_temp->_index, set_feed_temp_period);
-
   // setup rpm interrupt
   attachInterrupt(ENGINE_RPM_PIN, rpm_tick, RISING);
+#endif
+#ifdef ENABLE_IMU
+  imu = new IMUBodySensor(&cmd, CMD_IMU_HEADING);
+  cmd.register_callback(imu->_index, set_imu_period);
+#endif
+#ifdef ENABLE_TEMP
+  feed_temp = new TemperatureBodySensor(&cmd, CMD_FEED_OIL_TEMP, TC_CS);
+  cmd.register_callback(feed_temp->_index, set_feed_temp_period);
+#endif
 }
 
 void loop() {
+  com.handle_stream();
+  if (hb_timer >= HEARTBEAT_TIMEOUT) {
+    // reset all reports
+    allow_reports = false;
+  };
   //test->check();
+#ifdef ENABLE_PRESSURE
   feed_pressure->check();
+#endif
+#ifdef ENABLE_RPM
   rpm->check();
+#endif
+#ifdef ENABLE_IMU
   imu->check();
+#endif
+#ifdef ENABLE_TEMP
   feed_temp->check();
+#endif
 };
