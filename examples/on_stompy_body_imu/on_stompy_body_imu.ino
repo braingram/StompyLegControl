@@ -1,7 +1,7 @@
 #include <comando.h>
 
 // imu
-//#define ENABLE_IMU
+#define ENABLE_IMU
 #ifdef ENABLE_IMU
 #include <NXPMotionSense.h>
 #include <Wire.h>
@@ -9,7 +9,7 @@
 #endif
 
 // thermocouple
-//#define ENABLE_TEMP
+#define ENABLE_TEMP
 #ifdef ENABLE_TEMP
 #include <Adafruit_MAX31856.h>
 #define TC_CS 10
@@ -22,10 +22,10 @@
 // 3000 / 1024.
 #define ENABLE_PRESSURE
 #define PSI_PER_TICK 2.9296875
-#define FEED_PRESSURE_PIN 1
+#define FEED_PRESSURE_PIN A0
 
 #define ENABLE_RPM
-#define ENGINE_RPM_PIN 0
+#define ENGINE_RPM_PIN 21
 
 Comando com = Comando(Serial);
 CommandProtocol cmd = CommandProtocol(com);
@@ -219,10 +219,14 @@ class TemperatureBodySensor : public BodySensor {
 
 TemperatureBodySensor::TemperatureBodySensor(CommandProtocol *cmd, byte index, byte cs_pin):BodySensor(cmd, index) {
   tc = new Adafruit_MAX31856(cs_pin, TC_DI, TC_DO, TC_CLK);
+  tc->begin();
+  tc->setThermocoupleType(MAX31856_TCTYPE_K);
 };
 
 
 void TemperatureBodySensor::report_sensor() {
+  //tc->readFault();
+  //tc->readCJTemperature();
   _cmd->start_command(_index);
   _cmd->add_arg(tc->readThermocoupleTemperature());
   _cmd->finish_command();
@@ -289,6 +293,8 @@ void on_heartbeat(CommandProtocol *cmd) {
 };
 
 void setup(){
+  //pinMode(6, OUTPUT);
+  //digitalWrite(6, HIGH);
   Serial.begin(9600);
   //test = new AnalogBodySensor(&cmd, 1, 1);
   //cmd.register_callback(test->_index, set_analog_body_sensor_period);

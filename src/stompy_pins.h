@@ -3,8 +3,8 @@
 #ifndef STOMPYPINS_H
 #define STOMPYPINS_H
 
-#define DEBUG_PIN_1 11
-#define DEBUG_PIN_2 14
+//#define DEBUG_PIN_1 11
+//#define DEBUG_PIN_2 14
 
 // TODO add options for test box
 #ifdef OLD_BOARD
