@@ -21,7 +21,12 @@
 
 // 3000 / 1024.
 #define ENABLE_PRESSURE
-#define PSI_PER_TICK 2.9296875
+// pressure sensor resistor is 165 ohms
+// gauge reads 0-3000 for 4-20mA
+#define ADC_RES 16
+#define PRESSURE_RESISTOR 165
+float psi_min_ticks = 0;
+float psi_per_tick = 0;
 #define FEED_PRESSURE_PIN A0
 
 #define ENABLE_RPM
@@ -124,7 +129,9 @@ PressureBodySensor::PressureBodySensor(CommandProtocol *cmd, byte index, byte pi
 };
 
 void PressureBodySensor::report_sensor() {
-  float pressure = analogRead(_pin) * PSI_PER_TICK;
+  float pressure = analogRead(_pin) - psi_min_ticks;
+  pressure *= psi_per_tick;
+  if (pressure < 0) pressure = 0;
   _cmd->start_command(_index);
   _cmd->add_arg(pressure);
   _cmd->finish_command();
@@ -293,6 +300,12 @@ void on_heartbeat(CommandProtocol *cmd) {
 };
 
 void setup(){
+  // setup pressure sensor
+  analogReadResolution(ADC_RES);
+  int psi_max_ticks = ((1 << ADC_RES) - 1);
+  psi_min_ticks = psi_max_ticks * (0.004 / 0.02);
+  psi_per_tick = 3000. / (psi_max_ticks - psi_min_ticks);
+
   //pinMode(6, OUTPUT);
   //digitalWrite(6, HIGH);
   Serial.begin(9600);
