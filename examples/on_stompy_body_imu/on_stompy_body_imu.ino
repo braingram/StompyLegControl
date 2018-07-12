@@ -31,6 +31,8 @@ float psi_per_tick = 0;
 
 #define ENABLE_RPM
 #define ENGINE_RPM_PIN 21
+// average every N spark times
+#define RPM_AVG_N 36
 
 Comando com = Comando(Serial);
 CommandProtocol cmd = CommandProtocol(com);
@@ -143,27 +145,44 @@ class RPMBodySensor : public BodySensor {
     void report_sensor();
     volatile void tick();
 
-    elapsedMillis _tick_timer;
+    elapsedMicros _tick_timer;
     byte _pin;
     volatile unsigned long _dt;
+    float _sr;
+    float _csr;
+    volatile float _sdt;
 };
 
 RPMBodySensor::RPMBodySensor(CommandProtocol *cmd, byte index, byte pin):BodySensor(cmd, index) {
   // setup analog pin
   _pin = pin;
   _tick_timer = 0;
+  _sr = 1. / RPM_AVG_N;
+  _csr = 1. - _sr;
+  _dt = 0;
+  _sdt = 0;
 };
 
 volatile void RPMBodySensor::tick() {
   // attach to an interrupt
+  // _dt is the time in us between 2 cylinder firings
+  // 6x cylinders, at 2000 rpm gives 12000 firings per minute
+  // or 200 per second, 5 ms (5000 us) between cylinders
   _dt = _tick_timer;
+  // add to average to smooth out every ~N firings
+  _sdt = (_sdt * _csr) + (_dt * _sr);
   _tick_timer = 0;
 };
 
 void RPMBodySensor::report_sensor() {
-  float rpm = _dt;
+  float rpm = _sdt;
   if (rpm != 0) {
-    rpm = 60000. / rpm;
+    // convert from microseconds to rpm
+    // 6 cylinders
+    // 1000000 us per second
+    // 60 seconds per minute
+    // 1. / ((6. * _sdt [us]) / (1000000 * 60))
+    rpm = 10000000. / rpm;
   };
   _cmd->start_command(_index);
   _cmd->add_arg(rpm);
