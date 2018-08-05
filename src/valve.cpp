@@ -146,6 +146,8 @@ void Valve::set_ratio(float ratio) {
 
 void Valve::set_dither_time(unsigned long dither_time) {
   _dither_time = dither_time;
+  _dither = 0;
+  _dither_timer = 0;
 }
 
 unsigned long Valve::get_dither_time() {
