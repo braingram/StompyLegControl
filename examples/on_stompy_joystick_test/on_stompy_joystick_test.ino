@@ -9,6 +9,8 @@ TextProtocol text = TextProtocol(com);
 Leg* leg = new Leg();
 byte last_estop_severity = 255;
 
+unsigned long loop_time;
+
 struct ReportFlags {
   bool adc: 1;
   bool pid: 1;
@@ -26,7 +28,7 @@ ReportFlags to_report = {
   .pwm = true,
   .xyz = true,
   .angles = true,
-  .loop_time = false,
+  .loop_time = true,
 };
 
 // commands
@@ -619,14 +621,20 @@ void check_report() {
       cmd.finish_command();
     }
 
+    if (to_report.loop_time) {
+      cmd.start_command(CMD_REPORT_LOOP_TIME);
+      cmd.add_arg(loop_time);
+      cmd.finish_command();
+    }
+
     report_timer = 0;
   }
 }
 
 void loop() {
   com.handle_stream();
-  //unsigned long t0 = micros();
+  unsigned long t0 = micros();
   leg->update();
-  //t0 = micros() - t0;
+  loop_time = micros() - t0;
   check_report();
 }
