@@ -49,6 +49,7 @@ ReportFlags to_report = {
 #define CMD_RESET_PIDS 12
 #define CMD_DITHER 13
 #define CMD_FOLLOWING_ERROR_THRESHOLD 14
+#define CMD_PID_FUTURE_TIME 15
 
 #define CMD_REPORT_ADC 21
 #define CMD_REPORT_PID 22
@@ -432,17 +433,21 @@ void on_report_loop_time(CommandProtocol *cmd) {
 }
 
 void on_pid_seed_time(CommandProtocol *cmd) {
+  cmd->start_command(CMD_PID_SEED_TIME);
+  cmd->add_arg(leg->get_next_pid_seed_time());
+  cmd->finish_command();
+  return;
+}
+
+void on_pid_future_time(CommandProtocol *cmd) {
   if (!cmd->has_arg()) {
-    cmd->start_command(CMD_PID_SEED_TIME);
-    cmd->add_arg(leg->get_next_pid_seed_time());
+    cmd->start_command(CMD_PID_FUTURE_TIME);
     cmd->add_arg(leg->get_future_pid_seed_time());
     cmd->finish_command();
     return;
   }
-  unsigned long next_time = cmd->get_arg<unsigned long>();
   if (!cmd->has_arg()) return;
   unsigned long future_time = cmd->get_arg<unsigned long>();
-  leg->set_next_pid_seed_time(next_time);
   leg->set_future_pid_seed_time(future_time);
 }
 
@@ -541,6 +546,7 @@ void setup(){
   cmd.register_callback(CMD_CALF_SCALE, on_calf_scale);
   cmd.register_callback(CMD_REPORT_TIME, on_report_time);
   cmd.register_callback(CMD_PID_SEED_TIME, on_pid_seed_time);
+  cmd.register_callback(CMD_PID_FUTURE_TIME, on_pid_future_time);
   cmd.register_callback(CMD_RESET_PIDS, on_reset_pids);
   cmd.register_callback(CMD_DITHER, on_dither);
   cmd.register_callback(CMD_FOLLOWING_ERROR_THRESHOLD, on_following_error_threshold);

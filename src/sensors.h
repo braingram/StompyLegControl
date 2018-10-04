@@ -21,8 +21,12 @@
 #include "stompy_pins.h"
 
 // filter 10 most recent adc samples
+//#define N_FILTER_SAMPLES 50
 #define N_FILTER_SAMPLES 10
-// start averaging at min, stop at max
+// start averaging at min, stop at max (inclusive)
+//#define FILTER_MIN_INDEX 15
+//#define FILTER_MAX_INDEX 30
+//#define FILTER_AVG_N 16
 #define FILTER_MIN_INDEX 3
 #define FILTER_MAX_INDEX 6
 #define FILTER_AVG_N 4
@@ -32,6 +36,7 @@
 
 //#define STRING_POT_SAMPLE_TIME 2  // milliseconds
 #define STRING_POT_SAMPLE_TIME 250  // microseconds
+//#define STRING_POT_SAMPLE_TIME 500  // microseconds
 
 /* ========================================================
  *                      Analog Sensor

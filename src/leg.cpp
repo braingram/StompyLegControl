@@ -446,9 +446,11 @@ void Leg::hold_position() {
   knee_joint->set_target_adc_value(target_position.z);
 };
 
+/*
 void Leg::set_next_pid_seed_time(unsigned long seed_time) {
   _next_pid_seed_time = seed_time;
 };
+*/
 
 unsigned long Leg::get_next_pid_seed_time() {
   return _next_pid_seed_time;

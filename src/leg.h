@@ -112,7 +112,7 @@ class Leg {
     void disable_pids();
     bool pids_enabled();
 
-    void set_next_pid_seed_time(unsigned long seed_time);
+    //void set_next_pid_seed_time(unsigned long seed_time);
     unsigned long get_next_pid_seed_time();
     void set_future_pid_seed_time(unsigned long future_time);
     unsigned long get_future_pid_seed_time();
