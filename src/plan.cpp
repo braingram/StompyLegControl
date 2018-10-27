@@ -1,15 +1,17 @@
 #include <math.h>
+#include "defaults.h"
 #include "plan.h"
 
 void prepare_plan(PlanStruct *plan) {
   if (plan->mode == PLAN_ARC_MODE) {
     // build transformation matrix
-    float cx = cos(plan->angular.x * plan->speed);
-    float sx = sin(plan->angular.x * plan->speed);
-    float cy = cos(plan->angular.y * plan->speed);
-    float sy = sin(plan->angular.y * plan->speed);
-    float cz = cos(plan->angular.z * plan->speed);
-    float sz = sin(plan->angular.z * plan->speed);
+    float ss = plan->speed * PID_FUTURE_TIME / 1000.;
+    float cx = cos(plan->angular.x * ss);
+    float sx = sin(plan->angular.x * ss);
+    float cy = cos(plan->angular.y * ss);
+    float sy = sin(plan->angular.y * ss);
+    float cz = cos(plan->angular.z * ss);
+    float sz = sin(plan->angular.z * ss);
     plan->t_matrix[0][0] = cz * cy;
     plan->t_matrix[0][1] = cz*sx*sy-sz*cx;
     plan->t_matrix[0][2] = cx*sy*cz+sx*sz;
