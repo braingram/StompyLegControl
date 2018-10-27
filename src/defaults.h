@@ -1,6 +1,10 @@
 #ifndef DEFAULTS_H
 #define DEFAULTS_H
 
+// un-comment this to compile the library for fakelegs
+// that don't use hydraulics
+#define FAKELEG
+
 #define ADC_N_AVG 16
 #define ADC_RES 16
 #define ADC_CONV_SPEED ADC_CONVERSION_SPEED::HIGH_SPEED_16BITS
@@ -107,10 +111,13 @@
 #define KNEE_PID_MIN -8192
 #define KNEE_PID_MAX 8192
 
-//#define PID_SEED_TIME 25
-//#define PID_FUTURE_TIME 25
+#ifdef FAKELEG
 #define PID_SEED_TIME 4
 #define PID_FUTURE_TIME 4
+#else
+#define PID_SEED_TIME 40
+#define PID_FUTURE_TIME 40
+#endif
 
 #define DITHER_AMP 0  // 0% by default
 #define DITHER_TIME 2500  // 2.5 ms on 2.5 off = 5 ms period = 200 Hz
