@@ -66,9 +66,9 @@ float joy[3] = {0., 0., 0.};
 unsigned int pwms[3] = {0, 0, 0};
 // to go from 0,1 -> 0,max_pwm
 // for 12 bit, and ~50% range = 2048
-#define HIP_PWM_SCALE 1600
-#define THIGH_PWM_SCALE 1600
-#define KNEE_PWM_SCALE 1600
+#define HIP_PWM_SCALE 2500
+#define THIGH_PWM_SCALE 2500
+#define KNEE_PWM_SCALE 2500
 
 bool deadman = 0;
 
