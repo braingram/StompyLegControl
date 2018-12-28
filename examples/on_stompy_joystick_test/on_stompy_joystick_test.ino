@@ -438,19 +438,7 @@ void on_pid_seed_time(CommandProtocol *cmd) {
   cmd->finish_command();
   return;
 }
-/*
-void on_pid_future_time(CommandProtocol *cmd) {
-  if (!cmd->has_arg()) {
-    cmd->start_command(CMD_PID_FUTURE_TIME);
-    cmd->add_arg(leg->get_future_pid_seed_time());
-    cmd->finish_command();
-    return;
-  }
-  if (!cmd->has_arg()) return;
-  unsigned long future_time = cmd->get_arg<unsigned long>();
-  leg->set_future_pid_seed_time(future_time);
-}
-*/
+
 void on_reset_pids(CommandProtocol *cmd) {
   bool i_only = false;
   if (cmd->has_arg()) i_only = cmd->get_arg<bool>();
@@ -462,6 +450,7 @@ void on_reset_pids(CommandProtocol *cmd) {
 }
 
 void on_dither(CommandProtocol *cmd) {
+  /*
   // joint index, time, amp
   if (!cmd->has_arg()) return;
   byte ji = cmd->get_arg<byte>();
@@ -480,19 +469,28 @@ void on_dither(CommandProtocol *cmd) {
       default:
           return;
   }
+  */
   if (!cmd->has_arg()) {
     cmd->start_command(CMD_DITHER);
+    /*
     cmd->add_arg(ji);
     cmd->add_arg(valve->get_dither_time());
     cmd->add_arg(valve->get_dither_amp());
+    */
+    cmd->add_arg(leg->dither->get_dither_time());
+    cmd->add_arg(leg->dither->get_dither_amp());
     cmd->finish_command();
     return;
   };
   unsigned long dither_time = cmd->get_arg<unsigned long>();
   if (!cmd->has_arg()) return;
   int dither_amp = cmd->get_arg<int>();
+  /*
   valve->set_dither_time(dither_time);
   valve->set_dither_amp(dither_amp);
+  */
+  leg->dither->set_dither_time(dither_time);
+  leg->dither->set_dither_amp(dither_amp);
 }
 
 void on_following_error_threshold(CommandProtocol *cmd) {
@@ -546,7 +544,6 @@ void setup(){
   cmd.register_callback(CMD_CALF_SCALE, on_calf_scale);
   cmd.register_callback(CMD_REPORT_TIME, on_report_time);
   cmd.register_callback(CMD_PID_SEED_TIME, on_pid_seed_time);
-  //cmd.register_callback(CMD_PID_FUTURE_TIME, on_pid_future_time);
   cmd.register_callback(CMD_RESET_PIDS, on_reset_pids);
   cmd.register_callback(CMD_DITHER, on_dither);
   cmd.register_callback(CMD_FOLLOWING_ERROR_THRESHOLD, on_following_error_threshold);
@@ -641,7 +638,7 @@ void check_report() {
 void loop() {
   unsigned long t0 = micros();
   com.handle_stream();
-  leg->update();
+  int r = leg->update();  // TODO if sensors ready, report new values
   check_report();
   loop_time = max(micros() - t0, loop_time);
 }

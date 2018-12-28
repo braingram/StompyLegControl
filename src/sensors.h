@@ -122,7 +122,7 @@ class StringPot {
     FilteredAnalogSensor* _analog_sensor;
     //float _length; // TODO cache length?
     //elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
-    elapsedMicros _sample_timer;  // run at 500 Hz, 2 ms
+    //elapsedMicros _sample_timer;  // run at 500 Hz, 2 ms
     // int _sample_count;
     // elapsedMillis _filter_timer;  // run at 50 Hz, 20 ms
 };
@@ -155,7 +155,7 @@ class CalfSensor {
     FilteredAnalogSensor* _analog_sensor;
     //float _load; // TODO cache load?
     //elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
-    elapsedMicros _sample_timer;  // run at 500 Hz, 2 ms
+    //elapsedMicros _sample_timer;  // run at 500 Hz, 2 ms
     // int _sample_count;
 };
 

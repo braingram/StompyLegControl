@@ -57,7 +57,7 @@ class Leg {
     Leg();
     void set_leg_number(LEG_NUMBER leg);
     void _update_plan();
-    void update();
+    int update();
 
     LEG_NUMBER leg_number;
     EStop* estop;
@@ -76,6 +76,8 @@ class Leg {
     Valve* hip_valve;
     Valve* thigh_valve;
     Valve* knee_valve;
+
+    ValveDither* dither;
 
     Joint* hip_joint;
     Joint* thigh_joint;
@@ -112,19 +114,14 @@ class Leg {
     void disable_pids();
     bool pids_enabled();
 
-    //void set_next_pid_seed_time(unsigned long seed_time);
-    unsigned long get_next_pid_seed_time();
-    //void set_future_pid_seed_time(unsigned long future_time);
-    //unsigned long get_future_pid_seed_time();
+    float get_next_pid_seed_time();
 
     // overwrite current plan, set to stop in sensor frame
     void hold_position();
     void reset_pids();
     void reset_pids_i();
   private:
-    //unsigned long _next_pid_seed_time;
-    //unsigned long _future_pid_seed_time;
-
+    float _next_pid_seed_time;
     elapsedMicros _sample_timer;
     int _n_samples;
 };

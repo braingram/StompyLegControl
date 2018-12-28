@@ -93,6 +93,7 @@ void Joint::_update_pid() {
   _valve->set_pwm(pwm);
 };
 
+/*
 void Joint::update() {
   // read adc
   int pot_ready = _pot->update();
@@ -113,3 +114,4 @@ void Joint::update() {
     if (_valve->update_dither()) _valve->set_pwm();
   };
 };
+*/

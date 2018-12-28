@@ -1,13 +1,59 @@
 #include "defaults.h"
 #include "valve.h"
 
+ValveDither::ValveDither() {
+  _dither_timer = 0;
+  _dither_time = 0;
+  _dither = 0;
+  _dither_amp = 0;
+}
+
+bool ValveDither::update() {
+  if (_dither_timer > _dither_time) {
+    _dither_timer = 0;
+    if (_dither == 0) {
+      _dither = _dither_amp;
+    } else {
+      _dither = 0;
+    };
+    return true;
+  };
+  return false;
+}
+
+int ValveDither::value() {
+  return _dither;
+}
+
+void ValveDither::set_dither_time(unsigned long dither_time) {
+  _dither_time = dither_time;
+  _dither = 0;
+  _dither_timer = 0;
+}
+
+unsigned long ValveDither::get_dither_time() {
+  return _dither_time;
+}
+
+void ValveDither::set_dither_amp(int dither_amp) {
+  _dither_amp = dither_amp;
+}
+
+int ValveDither::get_dither_amp() {
+  return _dither_amp;
+}
+
+
 Valve::Valve(int extendPin, int retractPin, int enablePin, int disablePin, float frequency, int resolution) {
   // store state
   _pwm = 0;
   _direction = 0;
   _dither = 0;
+  /*
+  _dither = 0;
   _dither_amp = DITHER_AMP;
   _dither_time = DITHER_TIME;
+  */
 
   // store pins
   _extendPin = extendPin;
@@ -43,6 +89,7 @@ void Valve::stop() {
   _direction = VALVE_STOPPED;
 }
 
+/*
 bool Valve::update_dither() {
   if (_dither_timer > _dither_time) {
     if (_dither == 0) {
@@ -55,25 +102,35 @@ bool Valve::update_dither() {
   };
   return false;
 }
+*/
 
 void Valve::set_pwm(int pwm) {
   // check dither
-  update_dither();
+  //update_dither();
   if (pwm > 0) {
-    extend_pwm(pwm + _dither);
+    extend_pwm(pwm);
+    // extend_pwm(pwm);
   } else {
-    retract_pwm(-pwm + _dither);
+    retract_pwm(-pwm);
+    // retract_pwm(-pwm);
   };
 }
 
 void Valve::set_pwm() {
   if (_direction == VALVE_EXTENDING) {
-    extend_pwm(_pwm + _dither);
+    extend_pwm(_pwm);
+    // extend_pwm(_pwm);
   } else if (_direction == VALVE_RETRACTING) {
-    retract_pwm(_pwm + _dither);
+    retract_pwm(_pwm);
+    // retract_pwm(_pwm);
   } else {
     stop();
   }
+};
+
+void Valve::update_dither(int value) {
+  _dither = value;
+  set_pwm();
 };
 
 void Valve::extend_pwm(int pwm) {
@@ -81,7 +138,7 @@ void Valve::extend_pwm(int pwm) {
   if (pwm > _extend_pwm_max) pwm = _extend_pwm_max;
   _pwm = pwm;
   analogWrite(_retractPin, 0);
-  analogWrite(_extendPin, pwm);
+  analogWrite(_extendPin, pwm + _dither);
   _direction = VALVE_EXTENDING;
 }
 
@@ -90,7 +147,7 @@ void Valve::retract_pwm(int pwm) {
   if (pwm > _retract_pwm_max) pwm = _retract_pwm_max;
   _pwm = pwm;
   analogWrite(_extendPin, 0);
-  analogWrite(_retractPin, pwm);
+  analogWrite(_retractPin, pwm + _dither);
   _direction = VALVE_RETRACTING;
 }
 
@@ -142,24 +199,6 @@ void Valve::set_ratio(float ratio) {
   } else {
     retract_ratio(-ratio);
   };
-}
-
-void Valve::set_dither_time(unsigned long dither_time) {
-  _dither_time = dither_time;
-  _dither = 0;
-  _dither_timer = 0;
-}
-
-unsigned long Valve::get_dither_time() {
-  return _dither_time;
-}
-
-void Valve::set_dither_amp(int dither_amp) {
-  _dither_amp = dither_amp;
-}
-
-int Valve::get_dither_amp() {
-  return _dither_amp;
 }
 
 void Valve::extend_ratio(float ratio) {

@@ -80,6 +80,7 @@ Leg::Leg() {
       KNEE_EXTEND_PWM_MIN, KNEE_EXTEND_PWM_MAX,
       KNEE_RETRACT_PWM_MIN, KNEE_RETRACT_PWM_MAX);
 
+  dither = new ValveDither();
 
   hip_joint = new Joint(
       hip_valve, hip_pot, hip_angle_transform, hip_pid);
@@ -102,9 +103,8 @@ Leg::Leg() {
   current_plan.active = true;
   next_plan.active = false;
 
-  //_next_pid_seed_time = PID_SEED_TIME;
-  //_future_pid_seed_time = PID_FUTURE_TIME;
-  //last_target_point_generation_time = 0;
+  _next_pid_seed_time = (
+      (STRING_POT_SAMPLE_TIME * N_FILTER_SAMPLES) / 1000000.);
   
   set_leg_number(leg_number);
 
@@ -134,7 +134,7 @@ void Leg::set_leg_number(LEG_NUMBER leg) {
   };
 };
 
-void Leg::update() {
+int Leg::update() {
   // if estop is active, disable all valves
   // need to get estop rising edges and falling edges
   estop->check_heartbeat();
@@ -192,41 +192,41 @@ void Leg::update() {
     hip_joint->_update_pid();
     thigh_joint->_update_pid();
     knee_joint->_update_pid();
-  };
-  // TODO check dither
-  // TODO if pids are enabled
-  //    check joint limits, following error
 
-  /*
-  // update all joints, this will read the sensors
-  hip_joint->update();
-  thigh_joint->update();
-  knee_joint->update();
-  calf_sensor->update();
-
-  // check sensor out-of-range
-  // only check if (any pid is enable)
-  if (
-      hip_joint->pid_enabled() || thigh_joint->pid_enabled() ||
-      knee_joint->pid_enabled()) {
-    if (!(
-          hip_pot->adc_in_range() &&
-          thigh_pot->adc_in_range() &&
-          knee_pot->adc_in_range())) {
-      estop->set_estop(ESTOP_SENSOR_LIMIT);
-      hold_position();
-    };
-    //check following errors against thresholds
-    // TODO only check when updated
-    if (!(
-          hip_pid->error_ok() &&
-          thigh_pid->error_ok() &&
-          knee_pid->error_ok())) {
-      estop->set_estop(ESTOP_FOLLOWING_ERROR);
-      hold_position();
+    // if pids are enabled
+    //    check joint limits, following error
+    // only check if (any pid is enable)
+    if (
+        hip_joint->pid_enabled() || thigh_joint->pid_enabled() ||
+        knee_joint->pid_enabled()) {
+      if (!(
+            hip_pot->adc_in_range() &&
+            thigh_pot->adc_in_range() &&
+            knee_pot->adc_in_range())) {
+        estop->set_estop(ESTOP_SENSOR_LIMIT);
+        hold_position();
+      };
+      //check following errors against thresholds
+      // TODO only check when updated
+      if (!(
+            hip_pid->error_ok() &&
+            thigh_pid->error_ok() &&
+            knee_pid->error_ok())) {
+        estop->set_estop(ESTOP_FOLLOWING_ERROR);
+        hold_position();
+      };
     };
   };
-  */
+
+  // check dither
+  if (enabled && dither->update()) {
+    // update dither
+    hip_valve->update_dither(dither->value());
+    thigh_valve->update_dither(dither->value());
+    knee_valve->update_dither(dither->value());
+  };
+
+  return sensors_ready;
 };
 
 void Leg::_update_plan() {
@@ -346,58 +346,52 @@ void Leg::_update_plan() {
 
       current_plan = next_plan;
       next_plan.active = false;
- 
-      // make sure a new point gets generated
-      //last_target_point_generation_time = millis() - (_next_pid_seed_time + 1);
     };
   };
 
-  // check if a new target position should be generated
-  //if (millis() - last_target_point_generation_time > _next_pid_seed_time) {
-    // generate next target point TODO check output, stop on false
-    follow_plan(
-        current_plan, target_position, &target_position,
-        0.001 * get_next_pid_seed_time());
-    //last_target_point_generation_time = millis();
+  // generate next target point TODO check output, stop on false
+  follow_plan(
+      current_plan, target_position, &target_position,
+      _next_pid_seed_time);
+  //last_target_point_generation_time = millis();
 
-    // set joint targets
-    switch (current_plan.frame) {
-      //case (PLAN_BODY_FRAME):  // handled in python
-      case (PLAN_LEG_FRAME):
-        // target position is xyz
-        // convert to angles, then to sensor units
-        JointAngle3D a;
-        if (kinematics->xyz_to_angles(target_position, &a)) {
-          hip_joint->set_target_angle(a.hip);
-          thigh_joint->set_target_angle(a.thigh);
-          knee_joint->set_target_angle(a.knee);
-        } else {
-          estop->set_estop(ESTOP_HOLD);
-          hold_position();
-        };
-        break;
-      case (PLAN_JOINT_FRAME):
-        // target position are joint angles
-        // convert to sensor units, set pid
-        if (kinematics->angles_in_limits(
-              target_position.x, target_position.y, target_position.z)) {
-          hip_joint->set_target_angle(target_position.x);
-          thigh_joint->set_target_angle(target_position.y);
-          knee_joint->set_target_angle(target_position.z);
-        } else {
-          estop->set_estop(ESTOP_HOLD);
-          hold_position();
-        };
-        break;
-      case (PLAN_SENSOR_FRAME):
-        // target position is in sensor units, set pid targets
-        // TODO check sensor limits, stop when out of range
-        hip_joint->set_target_adc_value(target_position.x);
-        thigh_joint->set_target_adc_value(target_position.y);
-        knee_joint->set_target_adc_value(target_position.z);
-        break;
-    };
-  //};
+  // set joint targets
+  switch (current_plan.frame) {
+    //case (PLAN_BODY_FRAME):  // handled in python
+    case (PLAN_LEG_FRAME):
+      // target position is xyz
+      // convert to angles, then to sensor units
+      JointAngle3D a;
+      if (kinematics->xyz_to_angles(target_position, &a)) {
+        hip_joint->set_target_angle(a.hip);
+        thigh_joint->set_target_angle(a.thigh);
+        knee_joint->set_target_angle(a.knee);
+      } else {
+        estop->set_estop(ESTOP_HOLD);
+        hold_position();
+      };
+      break;
+    case (PLAN_JOINT_FRAME):
+      // target position are joint angles
+      // convert to sensor units, set pid
+      if (kinematics->angles_in_limits(
+            target_position.x, target_position.y, target_position.z)) {
+        hip_joint->set_target_angle(target_position.x);
+        thigh_joint->set_target_angle(target_position.y);
+        knee_joint->set_target_angle(target_position.z);
+      } else {
+        estop->set_estop(ESTOP_HOLD);
+        hold_position();
+      };
+      break;
+    case (PLAN_SENSOR_FRAME):
+      // target position is in sensor units, set pid targets
+      // TODO check sensor limits, stop when out of range
+      hip_joint->set_target_adc_value(target_position.x);
+      thigh_joint->set_target_adc_value(target_position.y);
+      knee_joint->set_target_adc_value(target_position.z);
+      break;
+  };
 };
 
 void Leg::compute_foot_position() {
@@ -416,7 +410,7 @@ void Leg::compute_foot_position() {
 };
 
 void Leg::set_next_plan(PlanStruct new_plan) {
-  prepare_plan(&new_plan, 0.001 * get_next_pid_seed_time());
+  prepare_plan(&new_plan, _next_pid_seed_time);
   next_plan = new_plan;
   next_plan.active = true;
 };
@@ -484,34 +478,16 @@ void Leg::hold_position() {
   // has immediate effect and overwrites next plan
   current_plan = next_plan;
   target_position = next_plan.linear;
-  // set last_target_point_generation_time
-  //last_target_point_generation_time = millis() - (_next_pid_seed_time + 1);
   // set joint targets to current values
   hip_joint->set_target_adc_value(target_position.x);
   thigh_joint->set_target_adc_value(target_position.y);
   knee_joint->set_target_adc_value(target_position.z);
 };
 
-/*
-void Leg::set_next_pid_seed_time(unsigned long seed_time) {
-  _next_pid_seed_time = seed_time;
-};
-*/
-
-unsigned long Leg::get_next_pid_seed_time() {
-  return (STRING_POT_SAMPLE_TIME * N_FILTER_SAMPLES) / 1000.;
-  //return _next_pid_seed_time;
+float Leg::get_next_pid_seed_time() {
+  return _next_pid_seed_time;
 };
 
-/*
-void Leg::set_future_pid_seed_time(unsigned long future_time) {
-  _future_pid_seed_time = future_time;
-};
-
-unsigned long Leg::get_future_pid_seed_time() {
-  return _future_pid_seed_time;
-};
-*/
 
 void Leg::reset_pids() {
   hip_pid->reset();

@@ -152,6 +152,7 @@ void StringPot::set_length_range(float min_value, float max_value) {
   set_length_max(max_value);
 }
 
+/*
 int StringPot::update() {
   if (_sample_timer >= STRING_POT_SAMPLE_TIME) {
     _analog_sensor->sample();
@@ -165,6 +166,7 @@ int StringPot::update() {
   };
   return STRING_POT_NO_SAMPLE;
 }
+*/
 
 bool StringPot::adc_in_range() {
   if (_analog_sensor->get_adc_value() > ((LinearTransform *)_transform)->get_src_max()) return false;
@@ -207,6 +209,7 @@ unsigned int CalfSensor::load_to_adc_value(float load) {
   return (unsigned int)(_transform->dst_to_src(load));
 }
 
+/*
 int CalfSensor::update() {
   // TODO same sample time/return as string pots?
   if (_sample_timer >= STRING_POT_SAMPLE_TIME) {
@@ -221,6 +224,7 @@ int CalfSensor::update() {
   };
   return STRING_POT_NO_SAMPLE;
 }
+*/
 
 /* ========================================================
  *                   PressureSensor

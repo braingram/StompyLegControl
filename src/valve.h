@@ -18,6 +18,24 @@
 // optimal for 13 bit assuming 96 MHz Teensy 3.2
 #define VALVE_PWM_FREQUENCY 5859.375
 
+class ValveDither {
+  public:
+    ValveDither();
+
+    void set_dither_time(unsigned long dither_time);
+    unsigned long get_dither_time();
+    void set_dither_amp(int dither_amp);
+    int get_dither_amp();
+
+    bool update();
+    int value();
+
+  private:
+    int _dither;
+    elapsedMicros _dither_timer;
+    unsigned long _dither_time;
+    int _dither_amp;
+};
 
 class Valve {
   public:
@@ -28,7 +46,7 @@ class Valve {
     void disable();
 
     // allow setting of pwm
-    bool update_dither();
+    void update_dither(int value);
     void set_pwm(int pwm);
     void set_pwm();
     void extend_pwm(int pwm);
@@ -58,22 +76,26 @@ class Valve {
     int get_direction();
     float get_ratio();
 
+    /*
     // dither
     void set_dither_time(unsigned long dither_time);
     unsigned long get_dither_time();
     void set_dither_amp(int dither_amp);
     int get_dither_amp();
-
+    */
   private:
     // state
     int _pwm;
+    int _dither;
     int _direction;
     bool _enabled;
 
+    /*
     int _dither;
     elapsedMicros _dither_timer;
     unsigned long _dither_time;
     int _dither_amp;
+    */
 
     // pins
     int _extendPin;
