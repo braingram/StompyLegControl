@@ -29,10 +29,9 @@
 #define ESTOP_HOLD 3
 #define ESTOP_SENSOR_LIMIT 4
 #define ESTOP_FOLLOWING_ERROR 5
+#define ESTOP_HEARTBEAT 6
 
 #define ESTOP_ON 2
-#define ESTOP_HEARTBEAT 2
-
 #define ESTOP_DEFAULT 2
 
 #define HEARTBEAT_TIMEOUT 1000  // milliseconds
