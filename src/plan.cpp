@@ -6,12 +6,12 @@ void prepare_plan(PlanStruct *plan) {
   if (plan->mode == PLAN_ARC_MODE) {
     // build transformation matrix
     float ss = plan->speed * PID_FUTURE_TIME / 1000.;
-    float cx = cos(plan->angular.x * ss);
-    float sx = sin(plan->angular.x * ss);
-    float cy = cos(plan->angular.y * ss);
-    float sy = sin(plan->angular.y * ss);
-    float cz = cos(plan->angular.z * ss);
-    float sz = sin(plan->angular.z * ss);
+    float cx = cosf(plan->angular.x * ss);
+    float sx = sinf(plan->angular.x * ss);
+    float cy = cosf(plan->angular.y * ss);
+    float sy = sinf(plan->angular.y * ss);
+    float cz = cosf(plan->angular.z * ss);
+    float sz = sinf(plan->angular.z * ss);
     plan->t_matrix[0][0] = cz * cy;
     plan->t_matrix[0][1] = cz*sx*sy-sz*cx;
     plan->t_matrix[0][2] = cx*sy*cz+sx*sz;
@@ -65,7 +65,7 @@ bool follow_plan(PlanStruct plan, Point3D current, Point3D* target, float dt) {
     target->y = (plan.linear.y - current.y);
     target->z = (plan.linear.z - current.z);
     // compute magnitude
-    float mag = sqrt(
+    float mag = sqrtf(
         target->x * target->x +
         target->y * target->y +
         target->z * target->z);

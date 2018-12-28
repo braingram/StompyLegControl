@@ -37,15 +37,15 @@ bool Kinematics::angles_to_xyz(float hip, float thigh, float knee, float* x, flo
   *z = 0;
 
   float a = THIGH_REST_ANGLE - thigh;
-  *x += THIGH_LENGTH * cos(a);
-  *z += THIGH_LENGTH * sin(a);
+  *x += THIGH_LENGTH * cosf(a);
+  *z += THIGH_LENGTH * sinf(a);
 
   a = KNEE_REST_ANGLE - knee - thigh;
-  *x += KNEE_LENGTH * cos(a);
-  *z += KNEE_LENGTH * sin(a);
+  *x += KNEE_LENGTH * cosf(a);
+  *z += KNEE_LENGTH * sinf(a);
 
-  *y = *x * sin(hip);
-  *x *= cos(hip);
+  *y = *x * sinf(hip);
+  *x *= cosf(hip);
   return true;
 };
 
@@ -55,26 +55,22 @@ bool Kinematics::angles_to_xyz(JointAngle3D angles, Point3D* point) {
 
 bool Kinematics::xyz_to_angles(float x, float y, float z, float* hip, float* thigh, float* knee) {
   if (x <= HIP_LENGTH) return false;
-  float l = sqrt(x * x + y * y);
+  //float l = sqrtf(x * x + y * y);
+  float l = hypotf(x, y);
 
-  *hip = atan2(y, x);
+  *hip = atan2f(y, x);
 
-  float L = sqrt(z * z + (l - HIP_LENGTH) * (l - HIP_LENGTH));
+  //float L = sqrtf(z * z + (l - HIP_LENGTH) * (l - HIP_LENGTH));
+  float L = hypotf(z, l - HIP_LENGTH);
 
-  float a1 = acos(-z / L);
-  //float a2 = acos(
-  //    (KNEE_LENGTH * KNEE_LENGTH - THIGH_LENGTH * THIGH_LENGTH - L * L) /
-  //    (-2 * THIGH_LENGTH * L));
-  float a2 = acos(
+  float a1 = acosf(-z / L);
+  float a2 = acosf(
       (KNEE_LENGTH_SQUARED - THIGH_LENGTH_SQUARED - L * L) /
       (-2 * THIGH_LENGTH * L));
 
   float alpha = (a1 + a2);
 
-  //float beta = acos(
-  //    (L * L - KNEE_LENGTH_SQUARED - THIGH_LENGTH_SQUARED) /
-  //    (-2 * KNEE_LENGTH * THIGH_LENGTH));
-  float beta = acos(
+  float beta = acosf(
       (L * L - KNEE_LENGTH_SQUARED - THIGH_LENGTH_SQUARED) /
       (KNEE_THIGH_MIN_2));
 

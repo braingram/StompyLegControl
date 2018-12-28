@@ -310,7 +310,7 @@ void JointAngleTransform::set_zero(float zero) {
 float JointAngleTransform::src_to_dst(float src_value) {
   // length to angle
   // cos(C) = (a * a + b * b - c * c) / (2 * a * b)
-  return acos((_ab2 - (src_value * src_value)) / _2ab) - _zero;
+  return acosf((_ab2 - (src_value * src_value)) / _2ab) - _zero;
 }
 
 float JointAngleTransform::length_to_angle(float length) {
@@ -320,7 +320,7 @@ float JointAngleTransform::length_to_angle(float length) {
 float JointAngleTransform::dst_to_src(float dst_value) {
   // angle to length
   // c * c = a * a + b * b - (2 * a * b) * cos(C)
-  return sqrt(_ab2 - _2ab * cos(dst_value + _zero));
+  return sqrtf(_ab2 - _2ab * cosf(dst_value + _zero));
 }
 
 float JointAngleTransform::angle_to_length(float angle) {
@@ -407,7 +407,7 @@ void CalfLoadTransform::set_offset(float offset) {
 float CalfLoadTransform::src_to_dst(float src_value) {
   // linear model for 4 bar linkage
   // upper triangle angle to opposite side
-  _sl = sqrt(_ab2 - _2ab * cos((src_value * _slope + _offset)));
+  _sl = sqrtf(_ab2 - _2ab * cosf((src_value * _slope + _offset)));
   // convert spring length change to lbs
   return (_base_length - _sl) * _inches_to_lbs;
 }
@@ -418,7 +418,7 @@ float CalfLoadTransform::value_to_load(float value) {
 
 float CalfLoadTransform::dst_to_src(float dst_value) {
   float sl = _base_length - dst_value / _inches_to_lbs;
-  return (acos((_ab2 - sl * sl) / _2ab) - _offset) / _slope;
+  return (acosf((_ab2 - sl * sl) / _2ab) - _offset) / _slope;
 }
 
 float CalfLoadTransform::load_to_value(float load) {
