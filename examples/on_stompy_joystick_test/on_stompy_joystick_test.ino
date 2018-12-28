@@ -638,7 +638,7 @@ void check_report() {
 void loop() {
   unsigned long t0 = micros();
   com.handle_stream();
-  int r = leg->update();  // TODO if sensors ready, report new values
-  check_report();
+  // if sensors ready, report new values
+  if (leg->update()) check_report();
   loop_time = max(micros() - t0, loop_time);
 }
