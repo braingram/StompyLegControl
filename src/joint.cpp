@@ -72,6 +72,7 @@ float Joint::get_pid_output() {
 };
 
 void Joint::_update_pid() {
+  if (!pid_enabled()) return;
   // TODO only update every n ms?
   _pid_output = _pid->update(_pot->get_adc_value());
   int pwm = 0;

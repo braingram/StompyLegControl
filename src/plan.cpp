@@ -2,10 +2,10 @@
 #include "defaults.h"
 #include "plan.h"
 
-void prepare_plan(PlanStruct *plan) {
+void prepare_plan(PlanStruct *plan, float future_time) {
   if (plan->mode == PLAN_ARC_MODE) {
     // build transformation matrix
-    float ss = plan->speed * PID_FUTURE_TIME / 1000.;
+    float ss = plan->speed * future_time;
     float cx = cosf(plan->angular.x * ss);
     float sx = sinf(plan->angular.x * ss);
     float cy = cosf(plan->angular.y * ss);

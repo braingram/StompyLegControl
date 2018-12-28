@@ -34,6 +34,6 @@ struct PlanStruct {
 };
 
 
-void prepare_plan(PlanStruct *plan);
+void prepare_plan(PlanStruct *plan, float future_time);
 bool follow_plan(PlanStruct plan, Point3D current, Point3D* target, float dt);
 #endif

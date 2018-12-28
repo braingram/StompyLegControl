@@ -99,7 +99,7 @@ class Leg {
     bool foot_position_valid;
 
     Point3D target_position;
-    unsigned long last_target_point_generation_time;
+    //unsigned long last_target_point_generation_time;
     PlanStruct current_plan;
     PlanStruct next_plan;
 
@@ -114,16 +114,19 @@ class Leg {
 
     //void set_next_pid_seed_time(unsigned long seed_time);
     unsigned long get_next_pid_seed_time();
-    void set_future_pid_seed_time(unsigned long future_time);
-    unsigned long get_future_pid_seed_time();
+    //void set_future_pid_seed_time(unsigned long future_time);
+    //unsigned long get_future_pid_seed_time();
 
     // overwrite current plan, set to stop in sensor frame
     void hold_position();
     void reset_pids();
     void reset_pids_i();
   private:
-    unsigned long _next_pid_seed_time;
-    unsigned long _future_pid_seed_time;
+    //unsigned long _next_pid_seed_time;
+    //unsigned long _future_pid_seed_time;
+
+    elapsedMicros _sample_timer;
+    int _n_samples;
 };
 
 #endif
