@@ -3,7 +3,7 @@
 
 // un-comment this to compile the library for fakelegs
 // that don't use hydraulics
-#define FAKELEG
+//#define FAKELEG
 
 #define ADC_N_AVG 16
 #define ADC_RES 16
