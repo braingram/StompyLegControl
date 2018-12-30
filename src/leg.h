@@ -121,6 +121,7 @@ class Leg {
     void reset_pids();
     void reset_pids_i();
   private:
+    unsigned long _sensor_poll_time;
     float _next_pid_seed_time;
     elapsedMicros _sample_timer;
     int _n_samples;

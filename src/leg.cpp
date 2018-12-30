@@ -103,10 +103,10 @@ Leg::Leg() {
   current_plan.active = true;
   next_plan.active = false;
 
-  _next_pid_seed_time = (
-      (STRING_POT_SAMPLE_TIME * N_FILTER_SAMPLES) / 1000000.);
-  
   set_leg_number(leg_number);
+
+  //_next_pid_seed_time = (
+  //    (STRING_POT_SAMPLE_TIME * N_FILTER_SAMPLES) / 1000000.);
 
   _sample_timer = 0;
   _n_samples = 0;
@@ -132,6 +132,17 @@ void Leg::set_leg_number(LEG_NUMBER leg) {
       calf_load_transform->set_offset(CALF_SENSOR_RIGHT_OFFSET);
       break;
   };
+
+  // if this is a fake leg, poll the sensors faster
+  if (leg_number == LEG_NUMBER::FAKE) {
+    _sensor_poll_time = FAKE_LEG_STRING_POT_SAMPLE_TIME;
+  } else {
+    _sensor_poll_time = STRING_POT_SAMPLE_TIME;
+  };
+
+  // pre-calculate next pid seed time in seconds
+  _next_pid_seed_time = (
+      (STRING_POT_SAMPLE_TIME * N_FILTER_SAMPLES) / 1000000.);
 };
 
 int Leg::update() {

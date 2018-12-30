@@ -3,7 +3,6 @@
 
 // un-comment this to compile the library for fakelegs
 // that don't use hydraulics
-//#define FAKELEG
 
 #define ADC_N_AVG 16
 #define ADC_RES 16
@@ -111,23 +110,13 @@
 #define KNEE_PID_MIN -8192
 #define KNEE_PID_MAX 8192
 
-#ifdef FAKELEG
-//#define PID_SEED_TIME 4
-//#define PID_FUTURE_TIME 4
 #define N_FILTER_SAMPLES 10
 #define FILTER_MIN_INDEX 3
 #define FILTER_MAX_INDEX 6
 #define FILTER_AVG_N 4
-#define STRING_POT_SAMPLE_TIME 250  // microseconds
-#else
-//#define PID_SEED_TIME 25
-//#define PID_FUTURE_TIME 25
-#define N_FILTER_SAMPLES 10
-#define FILTER_MIN_INDEX 3
-#define FILTER_MAX_INDEX 6
-#define FILTER_AVG_N 4
+
+#define FAKE_LEG_STRING_POT_SAMPLE_TIME 250  // microseconds
 #define STRING_POT_SAMPLE_TIME 2500  // microseconds
-#endif
 
 #define DITHER_AMP 0  // 0% by default
 #define DITHER_TIME 2500  // 2.5 ms on 2.5 off = 5 ms period = 200 Hz
