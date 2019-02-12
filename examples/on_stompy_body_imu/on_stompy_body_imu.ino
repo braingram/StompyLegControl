@@ -1,7 +1,7 @@
 #include <comando.h>
 
 // imu
-#define ENABLE_IMU
+//#define ENABLE_IMU
 #ifdef ENABLE_IMU
 #include <NXPMotionSense.h>
 #include <Wire.h>
@@ -9,7 +9,7 @@
 #endif
 
 // thermocouple
-#define ENABLE_TEMP
+//#define ENABLE_TEMP
 #ifdef ENABLE_TEMP
 #include <Adafruit_MAX31856.h>
 #define TC_CS 10
@@ -29,10 +29,25 @@ float psi_min_ticks = 0;
 float psi_per_tick = 0;
 #define FEED_PRESSURE_PIN A0
 
+//#define FAKE_RPM
+#ifdef FAKE_RPM
+#define ENABLE_RPM
+#undef ENABLE_PRESSURE
+#undef ENABLE_TEMP
+#undef ENABLE_IMU
+#define FAKE_RPM_PIN 3
+#define FAKE_RPM_MIN 1000
+#define FAKE_RPM_MAX 2000
+#define FAKE_RPM_UPDATE 1000
+elapsedMillis fake_rpm_timer;
+float fake_rpm_step = 200;
+float fake_rpm = 3000;
+#endif
+
 #define ENABLE_RPM
 #define ENGINE_RPM_PIN 21
 // average every N spark times
-#define RPM_AVG_N 36
+//#define RPM_AVG_N 36
 
 Comando com = Comando(Serial);
 CommandProtocol cmd = CommandProtocol(com);
@@ -146,48 +161,59 @@ class RPMBodySensor : public BodySensor {
     void report_sensor();
     volatile void tick();
 
-    elapsedMicros _tick_timer;
+    //elapsedMicros _tick_timer;
+    elapsedMillis _tick_timer;
     byte _pin;
     volatile unsigned long _dt;
-    float _sr;
-    float _csr;
-    volatile float _sdt;
+    //float _sr;
+    //float _csr;
+    //volatile float _sdt;
 };
 
 RPMBodySensor::RPMBodySensor(CommandProtocol *cmd, byte index, byte pin):BodySensor(cmd, index) {
   // setup analog pin
   _pin = pin;
   _tick_timer = 0;
-  _sr = 1. / RPM_AVG_N;
-  _csr = 1. - _sr;
+  //_sr = 1. / RPM_AVG_N;
+  //_csr = 1. - _sr;
   _dt = 0;
-  _sdt = 0;
+  //_sdt = 0;
 };
 
 volatile void RPMBodySensor::tick() {
   // attach to an interrupt
   // _dt is the time in us between 2 cylinder firings
-  // 6x cylinders, at 2000 rpm gives 12000 firings per minute
-  // or 200 per second, 5 ms (5000 us) between cylinders
+  // for 1 rev, only 3 cylinders fire so 1000 rpm = 50 hz
+  // so signal should range from 40 - 100 hz
   _dt = _tick_timer;
+  if (_dt < 3) return;  // this is too short [6667 rpm] and probably an error
   // add to average to smooth out every ~N firings
-  _sdt = (_sdt * _csr) + (_dt * _sr);
+  //_sdt = (_sdt * _csr) + (_dt * _sr);
   _tick_timer = 0;
 };
 
 void RPMBodySensor::report_sensor() {
-  float rpm = _sdt;
+  //float rpm = _sdt;
+  float rpm = _dt;
   if (rpm != 0) {
-    // convert from microseconds to rpm
-    // 6 cylinders
-    // 1000000 us per second
-    // 60 seconds per minute
-    // 1. / ((6. * _sdt [us]) / (1000000 * 60))
-    rpm = 10000000. / rpm;
+    // 3 pulse per rev
+    // dt * 3 = rev time in ms
+    // (dt * 3 / 1000.) = rev time in s
+    // (1000. / (dt * 3.)) = rev time in hz
+    // (1000. * 60. / (dt * 3.)) = rpm
+    // 20000. / dt = rpm
+    rpm = 20000. / rpm;
   };
+#ifdef FAKE_RPM
+  Serial.print("rpm dt: ");
+  Serial.print(_dt);
+  Serial.print(", ");
+  Serial.println(rpm);
+#else
   _cmd->start_command(_index);
   _cmd->add_arg(rpm);
   _cmd->finish_command();
+#endif
 };
 
 #ifdef ENABLE_IMU
@@ -319,7 +345,26 @@ void on_heartbeat(CommandProtocol *cmd) {
   allow_reports = true;
 };
 
+#ifdef FAKE_RPM
+void set_fake_rpm(float rpm) {
+  // convert rpm to pulse hz
+  float hz = rpm / 20.;
+  analogWriteFrequency(FAKE_RPM_PIN, hz);
+  analogWriteResolution(8);
+  // figure out duty cycle for ~100 us, assume 8 bit res
+  // 100 / (1000000 / hz) * 255
+  // hz / 10000 * 255
+  // hz * 0.0255
+  analogWrite(FAKE_RPM_PIN, max(1, hz * 0.0255));
+};
+#endif
+
 void setup(){
+
+#ifdef FAKE_RPM
+  pinMode(FAKE_RPM_PIN, OUTPUT);
+  set_fake_rpm(fake_rpm);
+#endif
   // setup pressure sensor
   analogReadResolution(ADC_RES);
   int psi_max_ticks = ((1 << ADC_RES) - 1);
@@ -358,11 +403,30 @@ void setup(){
 }
 
 void loop() {
+#ifdef FAKE_RPM
+  if (fake_rpm_timer >= FAKE_RPM_UPDATE) {
+    fake_rpm += fake_rpm_step;
+    if (fake_rpm > FAKE_RPM_MAX) {
+      fake_rpm = FAKE_RPM_MAX;
+      fake_rpm_step *= -1;
+    }
+    if (fake_rpm < FAKE_RPM_MIN) {
+      fake_rpm = FAKE_RPM_MIN;
+      fake_rpm_step *= -1;
+    }
+    Serial.print("set rpm: "); Serial.println(fake_rpm);
+    set_fake_rpm(fake_rpm);
+    fake_rpm_timer = 0;
+    allow_reports = true;
+    rpm->period = 500;
+  };
+#else
   com.handle_stream();
   if (hb_timer >= HEARTBEAT_TIMEOUT) {
     // reset all reports
     allow_reports = false;
   };
+#endif
   //test->check();
 #ifdef ENABLE_PRESSURE
   feed_pressure->check();
