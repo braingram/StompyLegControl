@@ -1,7 +1,7 @@
 #include <comando.h>
 
 // imu
-//#define ENABLE_IMU
+#define ENABLE_IMU
 #ifdef ENABLE_IMU
 #include <NXPMotionSense.h>
 #include <Wire.h>
@@ -9,7 +9,7 @@
 #endif
 
 // thermocouple
-//#define ENABLE_TEMP
+#define ENABLE_TEMP
 #ifdef ENABLE_TEMP
 #include <Adafruit_MAX31856.h>
 #define TC_CS 10
@@ -195,7 +195,7 @@ volatile void RPMBodySensor::tick() {
 void RPMBodySensor::report_sensor() {
   //float rpm = _sdt;
   float rpm = _dt;
-  if (rpm != 0) {
+  if (rpm > 3) {
     // 3 pulse per rev
     // dt * 3 = rev time in ms
     // (dt * 3 / 1000.) = rev time in s
@@ -203,13 +203,16 @@ void RPMBodySensor::report_sensor() {
     // (1000. * 60. / (dt * 3.)) = rpm
     // 20000. / dt = rpm
     rpm = 20000. / rpm;
-  };
+  } else {
+    rpm = 0;
+  }
 #ifdef FAKE_RPM
   Serial.print("rpm dt: ");
   Serial.print(_dt);
   Serial.print(", ");
   Serial.println(rpm);
 #else
+  if (rpm == 0) return;
   _cmd->start_command(_index);
   _cmd->add_arg(rpm);
   _cmd->finish_command();
