@@ -46,6 +46,7 @@ float fake_rpm = 3000;
 
 #define ENABLE_RPM
 #define ENGINE_RPM_PIN 21
+#define MIN_RPM_DT_US 3000
 // average every N spark times
 //#define RPM_AVG_N 36
 
@@ -161,8 +162,8 @@ class RPMBodySensor : public BodySensor {
     void report_sensor();
     volatile void tick();
 
-    //elapsedMicros _tick_timer;
-    elapsedMillis _tick_timer;
+    elapsedMicros _tick_timer;
+    //elapsedMillis _tick_timer;
     byte _pin;
     volatile unsigned long _dt;
     //float _sr;
@@ -185,8 +186,8 @@ volatile void RPMBodySensor::tick() {
   // _dt is the time in us between 2 cylinder firings
   // for 1 rev, only 3 cylinders fire so 1000 rpm = 50 hz
   // so signal should range from 40 - 100 hz
+  if (_tick_timer < MIN_RPM_DT_US) return;  // this is too short [6667 rpm] and probably an error
   _dt = _tick_timer;
-  if (_dt < 3) return;  // this is too short [6667 rpm] and probably an error
   // add to average to smooth out every ~N firings
   //_sdt = (_sdt * _csr) + (_dt * _sr);
   _tick_timer = 0;
@@ -195,14 +196,14 @@ volatile void RPMBodySensor::tick() {
 void RPMBodySensor::report_sensor() {
   //float rpm = _sdt;
   float rpm = _dt;
-  if (rpm > 3) {
+  if (rpm > MIN_RPM_DT_US) {
     // 3 pulse per rev
     // dt * 3 = rev time in ms
     // (dt * 3 / 1000.) = rev time in s
     // (1000. / (dt * 3.)) = rev time in hz
     // (1000. * 60. / (dt * 3.)) = rpm
-    // 20000. / dt = rpm
-    rpm = 20000. / rpm;
+    // 20000. / dt = rpm  # for ms, now using microseconds
+    rpm = 20000000. / rpm;
   } else {
     rpm = 0;
   }
