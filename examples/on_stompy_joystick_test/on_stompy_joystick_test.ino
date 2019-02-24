@@ -8,6 +8,7 @@ TextProtocol text = TextProtocol(com);
 
 Leg* leg = new Leg();
 byte last_estop_severity = 255;
+bool rts_state = false;
 
 unsigned long loop_time = 0;
 
@@ -636,6 +637,14 @@ void check_report() {
 }
 
 void loop() {
+  if (Serial.rts() && (!rts_state)) {
+    // rts just went high
+    leg->estop->set_estop(ESTOP_ON);
+    com.reset();
+    Serial.flush();
+    Serial.clear();
+  };
+  rts_state = Serial.rts();
   unsigned long t0 = micros();
   com.handle_stream();
   // if sensors ready, report new values
