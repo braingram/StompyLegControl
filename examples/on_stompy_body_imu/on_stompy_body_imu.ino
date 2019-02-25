@@ -50,6 +50,7 @@ float fake_rpm = 3000;
 // average every N spark times
 //#define RPM_AVG_N 36
 
+bool rts_state = false;
 Comando com = Comando(Serial);
 CommandProtocol cmd = CommandProtocol(com);
 TextProtocol text = TextProtocol(com);
@@ -407,6 +408,13 @@ void setup(){
 }
 
 void loop() {
+  if (Serial.rts() && (!rts_state)) {
+    // rts just went high
+    com.reset();
+    Serial.flush();
+    Serial.clear();
+  };
+  rts_state = Serial.rts();
 #ifdef FAKE_RPM
   if (fake_rpm_timer >= FAKE_RPM_UPDATE) {
     fake_rpm += fake_rpm_step;
