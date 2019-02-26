@@ -1,7 +1,7 @@
 #include <comando.h>
 
 // imu
-#define ENABLE_IMU
+//#define ENABLE_IMU
 #ifdef ENABLE_IMU
 #include <NXPMotionSense.h>
 #include <Wire.h>
