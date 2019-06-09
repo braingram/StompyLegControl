@@ -41,6 +41,12 @@
 #include "legnumber.h"
 #include "point.h"
 
+struct JointAngles {
+  float min_angle;
+  float max_angle;
+  float rest_angle;
+  float length;
+ };
 
 class Kinematics {
   public:
@@ -61,10 +67,16 @@ class Kinematics {
         float *hip, float* thigh, float* knee);
     bool xyz_to_angles(Point3D point, JointAngle3D* angles);
 
+    JointAngles joints[3];
+
+    void recompute();
+
   private:
     LEG_NUMBER _leg_number;
-    float _hip_min;
-    float _hip_max;
+    float _knee_length_squared;
+    float _thigh_length_squared;
+    float _knee_thigh_min_2;
+    float _base_beta;
 };
 
 #endif

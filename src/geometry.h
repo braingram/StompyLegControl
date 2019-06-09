@@ -1,6 +1,12 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
+#define HIP_INDEX 0
+#define THIGH_INDEX 1
+#define KNEE_INDEX 2
+
+
+// the below values can be overwritten via the serial api
 // ----------- Hip cylinder --------
 #define HIP_CYLINDER_MIN_LENGTH 16.0
 #define HIP_CYLINDER_MAX_LENGTH_MIDDLE 24.0

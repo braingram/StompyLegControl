@@ -51,6 +51,7 @@ ReportFlags to_report = {
 #define CMD_DITHER 13
 #define CMD_FOLLOWING_ERROR_THRESHOLD 14
 //#define CMD_PID_FUTURE_TIME 15
+#define CMD_SET_GEOMETRY 16
 
 #define CMD_REPORT_ADC 21
 #define CMD_REPORT_PID 22
@@ -58,6 +59,17 @@ ReportFlags to_report = {
 #define CMD_REPORT_XYZ 24
 #define CMD_REPORT_ANGLES 25
 #define CMD_REPORT_LOOP_TIME 26
+
+#define GEOM_CYLINDER_MIN 0
+#define GEOM_CYLINDER_MAX 1
+#define GEOM_TRIANGLE_A 2
+#define GEOM_TRIANGLE_B 3
+#define GEOM_ZERO_ANGLE 4
+#define GEOM_REST_ANGLE 5
+#define GEOM_LENGTH 6
+#define GEOM_MIN_ANGLE 7
+#define GEOM_MAX_ANGLE 8
+
 
 void on_heartbeat(CommandProtocol *cmd) {
   leg->estop->set_heartbeat();
@@ -230,13 +242,13 @@ void on_pid_config(CommandProtocol *cmd) {
     if (ji > 2) return;
     PID* pid;
     switch (ji) {
-        case 0:
+        case HIP_INDEX:
             pid = leg->hip_pid;
             break;
-        case 1:
+        case THIGH_INDEX:
             pid = leg->thigh_pid;
             break;
-        case 2:
+        case KNEE_INDEX:
             pid = leg->knee_pid;
             break;
         default:
@@ -296,13 +308,13 @@ void on_pwm_limits(CommandProtocol *cmd) {
   if (ji > 2) return;
   Valve* valve;
   switch (ji) {
-      case 0:
+      case HIP_INDEX:
           valve = leg->hip_valve;
           break;
-      case 1:
+      case THIGH_INDEX:
           valve = leg->thigh_valve;
           break;
-      case 2:
+      case KNEE_INDEX:
           valve = leg->knee_valve;
           break;
       default:
@@ -341,13 +353,13 @@ void on_adc_limits(CommandProtocol *cmd) {
   if (ji > 2) return;
   StringPot* pot;
   switch (ji) {
-      case 0:
+      case HIP_INDEX:
           pot = leg->hip_pot;
           break;
-      case 1:
+      case THIGH_INDEX:
           pot = leg->thigh_pot;
           break;
-      case 2:
+      case KNEE_INDEX:
           pot = leg->knee_pot;
           break;
       default:
@@ -458,13 +470,13 @@ void on_dither(CommandProtocol *cmd) {
   if (ji > 2) return;
   Valve* valve;
   switch (ji) {
-      case 0:
+      case HIP_INDEX:
           valve = leg->hip_valve;
           break;
-      case 1:
+      case THIGH_INDEX:
           valve = leg->thigh_valve;
           break;
-      case 2:
+      case KNEE_INDEX:
           valve = leg->knee_valve;
           break;
       default:
@@ -501,13 +513,13 @@ void on_following_error_threshold(CommandProtocol *cmd) {
   if (ji > 2) return;
   PID* pid;
   switch (ji) {
-      case 0:
+      case HIP_INDEX:
           pid = leg->hip_pid;
           break;
-      case 1:
+      case THIGH_INDEX:
           pid = leg->thigh_pid;
           break;
-      case 2:
+      case KNEE_INDEX:
           pid = leg->knee_pid;
           break;
       default:
@@ -522,6 +534,127 @@ void on_following_error_threshold(CommandProtocol *cmd) {
   };
   float error_threshold = cmd->get_arg<float>();
   pid->set_error_threshold(error_threshold);
+}
+
+void on_set_geometry(CommandProtocol *cmd) {
+  // joint number
+  if (!cmd->has_arg()) return;
+  byte ji = cmd->get_arg<byte>();
+  if (ji > 2) return;
+  // geometry index
+  if (!cmd->has_arg()) return;
+  byte gi = cmd->get_arg<byte>();
+  // get value
+  if (!cmd->has_arg()) return;
+  float value = cmd->get_arg<float>();
+  // set thing
+  switch (gi) {
+    case GEOM_CYLINDER_MIN:
+      switch (ji) {
+        case HIP_INDEX:
+          leg->hip_pot->set_length_min(value);
+          break;
+        case THIGH_INDEX:
+          leg->thigh_pot->set_length_min(value);
+          break;
+        case KNEE_INDEX:
+          leg->knee_pot->set_length_min(value);
+          break;
+      };
+      break;
+    case GEOM_CYLINDER_MAX:
+      switch (ji) {
+        case HIP_INDEX:
+          leg->hip_pot->set_length_max(value);
+          break;
+        case THIGH_INDEX:
+          leg->thigh_pot->set_length_max(value);
+          break;
+        case KNEE_INDEX:
+          leg->knee_pot->set_length_max(value);
+          break;
+      };
+      break;
+    case GEOM_TRIANGLE_A:
+      switch (ji) {
+        case HIP_INDEX:
+          leg->hip_angle_transform->set_a(value);
+          break;
+        case THIGH_INDEX:
+          leg->thigh_angle_transform->set_a(value);
+          break;
+        case KNEE_INDEX:
+          leg->knee_angle_transform->set_a(value);
+          break;
+      };
+      break;
+    case GEOM_TRIANGLE_B:
+      switch (ji) {
+        case HIP_INDEX:
+          leg->hip_angle_transform->set_b(value);
+          break;
+        case THIGH_INDEX:
+          leg->thigh_angle_transform->set_b(value);
+          break;
+        case KNEE_INDEX:
+          leg->knee_angle_transform->set_b(value);
+          break;
+      };
+      break;
+    case GEOM_ZERO_ANGLE:
+      switch (ji) {
+        case HIP_INDEX:
+          leg->hip_angle_transform->set_zero(value);
+          break;
+        case THIGH_INDEX:
+          leg->thigh_angle_transform->set_zero(value);
+          break;
+        case KNEE_INDEX:
+          leg->knee_angle_transform->set_zero(value);
+          break;
+      };
+      break;
+    case GEOM_REST_ANGLE:
+      switch (ji) {
+        case HIP_INDEX:
+        case THIGH_INDEX:
+        case KNEE_INDEX:
+          leg->kinematics->joints[ji].rest_angle = value;
+          leg->kinematics->recompute();
+          break;
+      };
+      break;
+    case GEOM_LENGTH:
+      switch (ji) {
+        case HIP_INDEX:
+        case THIGH_INDEX:
+        case KNEE_INDEX:
+          leg->kinematics->joints[ji].length = value;
+          leg->kinematics->recompute();
+          break;
+      };
+      break;
+    case GEOM_MIN_ANGLE:
+      switch (ji) {
+        case HIP_INDEX:
+        case THIGH_INDEX:
+        case KNEE_INDEX:
+          leg->kinematics->joints[ji].min_angle = value;
+          leg->kinematics->recompute();
+          break;
+      };
+      break;
+    case GEOM_MAX_ANGLE:
+      switch (ji) {
+        case HIP_INDEX:
+        case THIGH_INDEX:
+        case KNEE_INDEX:
+          leg->kinematics->joints[ji].max_angle = value;
+          leg->kinematics->recompute();
+          break;
+      };
+      break;
+  };
 }
 
 
@@ -548,6 +681,7 @@ void setup(){
   cmd.register_callback(CMD_RESET_PIDS, on_reset_pids);
   cmd.register_callback(CMD_DITHER, on_dither);
   cmd.register_callback(CMD_FOLLOWING_ERROR_THRESHOLD, on_following_error_threshold);
+  cmd.register_callback(CMD_SET_GEOMETRY, on_set_geometry);
   cmd.register_callback(CMD_REPORT_ADC, on_report_adc);
   cmd.register_callback(CMD_REPORT_PWM, on_report_pwm);
   cmd.register_callback(CMD_REPORT_PID, on_report_pid);
