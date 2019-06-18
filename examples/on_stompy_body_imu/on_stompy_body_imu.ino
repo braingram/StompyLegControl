@@ -1,11 +1,17 @@
 #include <comando.h>
 
 // imu
-//#define ENABLE_IMU
+#define ENABLE_IMU
 #ifdef ENABLE_IMU
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
+/*
 #include <NXPMotionSense.h>
 #include <Wire.h>
 #include <EEPROM.h>
+*/
 #endif
 
 // thermocouple
@@ -229,16 +235,28 @@ class IMUBodySensor : public BodySensor {
     void update_filter();
     void check();
 
+    bool imu_ready;
+    Adafruit_BNO055 bno;
+    sensors_event_t orientationData;
+    /*
     NXPMotionSense imu;
     NXPSensorFusion filter;
+    */
 };
 
 IMUBodySensor::IMUBodySensor(CommandProtocol *cmd, byte index):BodySensor(cmd, index) {
+  // I think 55 is an arbitrary sensorID
+  bno = Adafruit_BNO055(55);
+  imu_ready = bno.begin();
+  /*
   imu.begin();
   filter.begin(100);
+  */
 };
 
+/*
 void IMUBodySensor::update_filter() {
+  if (!imu_ready) return;
   if (imu.available()) {
     float ax, ay, az;
     float gx, gy, gz;
@@ -251,18 +269,29 @@ void IMUBodySensor::update_filter() {
     filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
   };
 };
+*/
 
 void IMUBodySensor::check() {
-  update_filter();
+  if (!imu_ready) return;
+  //update_filter();
   this->BodySensor::check();
 };
 
 void IMUBodySensor::report_sensor() {
+  if (!imu_ready) return;
+  bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+  _cmd->start_command(_index);
+  _cmd->add_arg(orientationData.orientation.x);
+  _cmd->add_arg(orientationData.orientation.y);
+  _cmd->add_arg(orientationData.orientation.z);
+  _cmd->finish_command();
+  /*
   _cmd->start_command(_index);
   _cmd->add_arg(filter.getRoll());
   _cmd->add_arg(filter.getPitch());
   _cmd->add_arg(filter.getYaw());
   _cmd->finish_command();
+  */
 };
 #endif
 
@@ -324,10 +353,10 @@ void rpm_tick() {
 #endif
 
 #ifdef ENABLE_IMU
-IMUBodySensor *imu;
+IMUBodySensor *body_imu;
 
 void set_imu_period(CommandProtocol *cmd) {
-  imu->_set_period(cmd);
+  body_imu->_set_period(cmd);
 };
 #endif
 
@@ -398,8 +427,8 @@ void setup(){
   attachInterrupt(ENGINE_RPM_PIN, rpm_tick, RISING);
 #endif
 #ifdef ENABLE_IMU
-  imu = new IMUBodySensor(&cmd, CMD_IMU_HEADING);
-  cmd.register_callback(imu->_index, set_imu_period);
+  body_imu = new IMUBodySensor(&cmd, CMD_IMU_HEADING);
+  cmd.register_callback(body_imu->_index, set_imu_period);
 #endif
 #ifdef ENABLE_TEMP
   feed_temp = new TemperatureBodySensor(&cmd, CMD_FEED_OIL_TEMP, TC_CS);
@@ -447,7 +476,7 @@ void loop() {
   rpm->check();
 #endif
 #ifdef ENABLE_IMU
-  imu->check();
+  body_imu->check();
 #endif
 #ifdef ENABLE_TEMP
   feed_temp->check();
