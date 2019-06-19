@@ -281,9 +281,9 @@ void IMUBodySensor::report_sensor() {
   if (!imu_ready) return;
   bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
   _cmd->start_command(_index);
-  _cmd->add_arg(orientationData.orientation.x);
-  _cmd->add_arg(orientationData.orientation.y);
   _cmd->add_arg(orientationData.orientation.z);
+  _cmd->add_arg(orientationData.orientation.y);
+  _cmd->add_arg(orientationData.orientation.x);
   _cmd->finish_command();
   /*
   _cmd->start_command(_index);
