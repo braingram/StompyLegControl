@@ -1,7 +1,7 @@
 /*
-	joint.h - Leg joint class.
-	Created by Brett Graham, June 11, 2017.
-	Released into the public domain -- so help you God.
+  joint.h - Leg joint class.
+  Created by Brett Graham, June 11, 2017.
+  Released into the public domain -- so help you God.
 */
 
 #ifndef JOINT_H

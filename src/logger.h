@@ -1,7 +1,7 @@
 /*
-	logger.h - Logging library.
-	Created by Brett Graham, June 11, 2017.
-	Released into the public domain -- so help you God.
+  logger.h - Logging library.
+  Created by Brett Graham, June 11, 2017.
+  Released into the public domain -- so help you God.
 */
 
 #ifndef LOGGER_H

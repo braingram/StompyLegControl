@@ -189,12 +189,32 @@ float CalfSensor::read_load() {
   return get_load();
 }
 
+float CalfSensor::read_compression() {
+  _analog_sensor->read_adc();
+  return get_compression();
+}
+
 unsigned int CalfSensor::read_adc() {
   return _analog_sensor->read_adc();
 }
 
+void CalfSensor::precompute() {
+  _load = adc_value_to_load(_analog_sensor->get_adc_value());
+  // limit compression to reasonable range [0 - MAX]
+  _compression = _transform->get_compression();
+  if (_compression < 0) {
+    _compression = 0;
+  } else if (_compression > CALF_MAX_COMPRESSION) {
+    _compression = CALF_MAX_COMPRESSION;
+  };
+}
+
 float CalfSensor::get_load() {
-  return adc_value_to_load(_analog_sensor->get_adc_value());
+  return _load;  // get cached value
+}
+
+float CalfSensor::get_compression() {
+  return _compression;  // get cached value
 }
 
 unsigned int CalfSensor::get_adc_value() {
@@ -223,52 +243,5 @@ int CalfSensor::update() {
     };
   };
   return STRING_POT_NO_SAMPLE;
-}
-*/
-
-/* ========================================================
- *                   PressureSensor
- * ========================================================*/
-/*
-PressureSensor::PressureSensor(int pin, ADC* adc, int adc_number, Transform* transform) : AnalogSensor(pin, adc, adc_number) {
-  _transform = transform;
-}
-
-PressureSensor::PressureSensor(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_max, float pressure_min, float pressure_max) : AnalogSensor(pin, adc, adc_number) {
-  _transform = new LinearTransform(adc_min, adc_max, pressure_min, pressure_max);
-}
-
-float PressureSensor::read_pressure() {
-  read_adc();
-  _pressure = _transform->src_to_dst(_adc_value);
-  return _pressure;
-}
-
-float PressureSensor::get_pressure() {
-  return _pressure;
-}
-*/
-
-/* ========================================================
- *                   JoystickAxis
- * ========================================================*/
-/*
-JoystickAxis::JoystickAxis(int pin, ADC* adc, int adc_number, Transform* transform) : AnalogSensor(pin, adc, adc_number) {
-  _transform = transform;
-}
-
-
-JoystickAxis::JoystickAxis(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_deadband_min, unsigned int adc_deadband_max, unsigned int adc_max, float axis_min, float axis_mid, float axis_max) : AnalogSensor(pin, adc, adc_number) {
-  _transform = new LinearDeadbandTransform(adc_min, adc_deadband_min, adc_deadband_max, adc_max, axis_min, axis_mid, axis_max);
-}
-
-float JoystickAxis::read_axis() {
-  read_adc();
-  _axis = _transform->src_to_dst(_adc_value);
-  return _axis;
-}
-
-float JoystickAxis::get_axis() {
-  return _axis;
 }
 */

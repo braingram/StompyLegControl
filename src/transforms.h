@@ -1,7 +1,7 @@
 /*
-	transforms.h - Library for transforming sensor readings etc.
-	Created by Brett Graham, May 8, 2017.
-	Released into the public domain -- so help you God.
+  transforms.h - Library for transforming sensor readings etc.
+  Created by Brett Graham, May 8, 2017.
+  Released into the public domain -- so help you God.
 */
 
 
@@ -172,6 +172,7 @@ class CalfLoadTransform : public Transform {
     float get_slope();
     float get_offset();
     float get_spring_length();
+    float get_compression();
 
     void set_a(float a);
     void set_b(float b);
@@ -190,6 +191,7 @@ class CalfLoadTransform : public Transform {
     float _slope;  // sensor to angle slope
     float _offset;
     float _sl;
+    float _compression;
     void _compute_ab();
     float _a;
     float _b;

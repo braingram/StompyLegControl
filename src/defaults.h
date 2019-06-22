@@ -1,9 +1,6 @@
 #ifndef DEFAULTS_H
 #define DEFAULTS_H
 
-// un-comment this to compile the library for fakelegs
-// that don't use hydraulics
-
 #define ADC_N_AVG 16
 #define ADC_RES 16
 #define ADC_CONV_SPEED ADC_CONVERSION_SPEED::HIGH_SPEED_16BITS
@@ -129,6 +126,7 @@
 #define CALF_SENSOR_RIGHT_SLOPE -0.000028211981
 #define CALF_SENSOR_RIGHT_OFFSET 2.5919518638525259
 #define CALF_INCHES_TO_LBS 600.0
+#define CALF_MAX_COMPRESSION 4.1
 
 #define FOLLOWING_ERROR_THRESHOLD 6000.0
 

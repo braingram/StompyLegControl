@@ -1,7 +1,7 @@
 /*
-	valve.h - Library for controlling a hydraulic valve.
-	Created by Brett Graham, May 7, 2017.
-	Released into the public domain -- so help you God.
+  valve.h - Library for controlling a hydraulic valve.
+  Created by Brett Graham, May 7, 2017.
+  Released into the public domain -- so help you God.
 */
 
 

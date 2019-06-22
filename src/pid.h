@@ -1,7 +1,7 @@
 /*
-	pid.h - PID library.
-	Created by Brett Graham, June 12, 2017.
-	Released into the public domain -- so help you God.
+  pid.h - PID library.
+  Created by Brett Graham, June 12, 2017.
+  Released into the public domain -- so help you God.
 */
 
 #ifndef PID_H

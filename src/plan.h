@@ -1,7 +1,7 @@
 /*
-	plan.h - Movement plan library.
-	Created by Brett Graham, June 10, 2017.
-	Released into the public domain -- so help you God.
+  plan.h - Movement plan library.
+  Created by Brett Graham, June 10, 2017.
+  Released into the public domain -- so help you God.
 */
 
 #ifndef PLAN_H

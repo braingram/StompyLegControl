@@ -1,7 +1,7 @@
 /*
-	sensors.h - Library for reading sensors.
-	Created by Brett Graham, May 7, 2017.
-	Released into the public domain -- so help you God.
+  sensors.h - Library for reading sensors.
+  Created by Brett Graham, May 7, 2017.
+  Released into the public domain -- so help you God.
 */
 
 
@@ -139,10 +139,13 @@ class CalfSensor {
 
     // read and return
     float read_load();
+    float read_compression();
     unsigned int read_adc();
 
     // don't read, just return
+    void precompute();  // compute load and length
     float get_load();
+    float get_compression();
     unsigned int get_adc_value();
 
     float adc_value_to_load(unsigned int adc_value);
@@ -153,81 +156,11 @@ class CalfSensor {
   protected:
     CalfLoadTransform* _transform;
     FilteredAnalogSensor* _analog_sensor;
-    //float _load; // TODO cache load?
+    float _load; // cache load
+    float _compression; // cache and range limit compression
     //elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
     //elapsedMicros _sample_timer;  // run at 500 Hz, 2 ms
     // int _sample_count;
 };
-
-
-
-/*
-
-class CalfSensor {
-  public:
-    CalfSensor(AnalogSensor* analog_sensor, Transform* transform);
-    CalfSensor(AnalogSensor* analog_sensor, unsigned int adc_min, unsigned int adc_max, float length_min, float length_max);
-
-    // read and return
-    float read_length();
-    unsigned int read_adc();
-
-    // don't read, just return
-    float get_length();
-    unsigned int get_adc_value();
-
-    float adc_value_to_length(unsigned int adc_value);
-    unsigned int length_to_adc_value(float length);
-
-    void set_adc_min(float value);
-    void set_adc_max(float value);
-    void set_adc_range(float min_value, float max_value);
-
-    int update();
-
-  protected:
-    Transform* _transform;
-    FilteredAnalogSensor* _analog_sensor;
-    float _length;
-    elapsedMillis _sample_timer;  // run at 500 Hz, 2 ms
-    int _sample_count;
-    // elapsedMillis _filter_timer;  // run at 50 Hz, 20 ms
-};
-*/
-
-/*
-class PressureSensor : public AnalogSensor {
-  public:
-    PressureSensor(int pin, ADC* adc, int adc_number, Transform* transform);
-    PressureSensor(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_max, float pressure_min, float pressure_max);
-
-    float read_pressure();
-
-    float get_pressure();
-
-  protected:
-    Transform* _transform;
-    float _pressure;
-};
-*/
-
-
-/* ========================================================
- *                     JoystickAxis
- * ========================================================*/
-/*
-class JoystickAxis : public AnalogSensor {
-  public:
-    JoystickAxis(int pin, ADC* adc, int adc_number, Transform* transform);
-    JoystickAxis(int pin, ADC* adc, int adc_number, unsigned int adc_min, unsigned int adc_deadband_min, unsigned int adc_deadband_max, unsigned int adc_max, float axis_min, float axis_mid, float axis_max);
-
-    float read_axis();
-
-    float get_axis();
-  protected:
-    Transform* _transform;
-    float _axis;
-};
-*/
 
 #endif

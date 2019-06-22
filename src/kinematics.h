@@ -1,7 +1,7 @@
 /*
-	kinematics.h - Library for leg kinematics.
-	Created by Brett Graham, June 4, 2017.
-	Released into the public domain -- so help you God.
+  kinematics.h - Library for leg kinematics.
+  Created by Brett Graham, June 4, 2017.
+  Released into the public domain -- so help you God.
 
   Angles [gazebo]
     hip angle
@@ -55,17 +55,24 @@ class Kinematics {
 
     bool angles_in_limits(
         float hip, float thigh, float knee);
-    // TODO add foot limit
 
     bool angles_to_xyz(
         float hip, float thigh, float knee,
         float* x, float* y, float* z);
+    bool angles_to_xyz(
+        float hip, float thigh, float knee, float calf_compression,
+        float* x, float* y, float* z);
     bool angles_to_xyz(JointAngle3D angles, Point3D* point);
+    bool angles_to_xyz(JointAngle3D angles, float calf_compression, Point3D* point);
 
     bool xyz_to_angles(
         float x, float y, float z,
         float *hip, float* thigh, float* knee);
+    bool xyz_to_angles(
+        float x, float y, float z, float calf_compression,
+        float *hip, float* thigh, float* knee);
     bool xyz_to_angles(Point3D point, JointAngle3D* angles);
+    bool xyz_to_angles(Point3D point, float calf_compression, JointAngle3D* angles);
 
     JointAngles joints[3];
 

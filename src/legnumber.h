@@ -1,7 +1,7 @@
 /*
-	legnumber.h - Library legnumber class.
-	Created by Brett Graham, July 23, 2017.
-	Released into the public domain -- so help you God.
+  legnumber.h - Library legnumber class.
+  Created by Brett Graham, July 23, 2017.
+  Released into the public domain -- so help you God.
 */
 
 #ifndef LEGNUMBER_H

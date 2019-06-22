@@ -188,6 +188,8 @@ int Leg::update() {
       thigh_analog_sensor->filter();
       knee_analog_sensor->filter();
       calf_analog_sensor->filter();
+      // update calf sensor, computes load and compression
+      calf_sensor->precompute();
 
       _n_samples = 0;
       sensors_ready = true;
@@ -265,15 +267,25 @@ void Leg::_update_plan() {
               case (PLAN_BODY_FRAME):
                 break;
               case (PLAN_JOINT_FRAME):
+#ifdef CALF_COMPRESSION_COMP
+                valid_plan = kinematics->xyz_to_angles(
+                  target_position, calf_sensor->get_compression(), &a);
+#else
                 valid_plan = kinematics->xyz_to_angles(
                   target_position, &a);
+#endif
                 target_position.x = a.hip;
                 target_position.y = a.thigh;
                 target_position.z = a.knee;
                 break;
               case (PLAN_SENSOR_FRAME):
+#ifdef CALF_COMPRESSION_COMP
+                valid_plan = kinematics->xyz_to_angles(
+                  target_position, calf_sensor->get_compression(), &a);
+#else
                 valid_plan = kinematics->xyz_to_angles(
                   target_position, &a);
+#endif
                 target_position.x = hip_pot->length_to_adc_value(
                     hip_angle_transform->angle_to_length(a.hip));
                 target_position.y = thigh_pot->length_to_adc_value(
@@ -292,7 +304,12 @@ void Leg::_update_plan() {
                 a.hip = target_position.x;
                 a.thigh = target_position.y;
                 a.knee = target_position.z;
+#ifdef CALF_COMPRESSION_COMP
+                valid_plan = kinematics->angles_to_xyz(
+                  a, calf_sensor->get_compression(), &target_position);
+#else
                 valid_plan = kinematics->angles_to_xyz(a, &target_position);
+#endif
                 break;
               case (PLAN_SENSOR_FRAME):
                 // angles -> sensors
@@ -323,7 +340,12 @@ void Leg::_update_plan() {
                 a.knee = knee_angle_transform->length_to_angle(
                     knee_pot->adc_value_to_length(
                       target_position.z));
+#ifdef CALF_COMPRESSION_COMP
+                valid_plan = kinematics->angles_to_xyz(
+                  a, calf_sensor->get_compression(), &target_position);
+#else
                 valid_plan = kinematics->angles_to_xyz(a, &target_position);
+#endif
                 break;
               case (PLAN_JOINT_FRAME):
                 // sensors -> angles
@@ -373,7 +395,11 @@ void Leg::_update_plan() {
       // target position is xyz
       // convert to angles, then to sensor units
       JointAngle3D a;
+#ifdef CALF_COMPRESSION_COMP
+      if (kinematics->xyz_to_angles(target_position, calf_sensor->get_compression(), &a)) {
+#else
       if (kinematics->xyz_to_angles(target_position, &a)) {
+#endif
         hip_joint->set_target_angle(a.hip);
         thigh_joint->set_target_angle(a.thigh);
         knee_joint->set_target_angle(a.knee);
@@ -413,8 +439,13 @@ void Leg::compute_foot_position() {
 
   // compute foot xyz
   // TODO check return value, stop on false?
+#ifdef CALF_COMPRESSION_COMP
+  foot_position_valid = kinematics->angles_to_xyz(
+      joint_angles, calf_sensor->get_compression(), &foot_position);
+#else
   foot_position_valid = kinematics->angles_to_xyz(
       joint_angles, &foot_position);
+#endif
 
   // compute calf load
   calf_load = calf_sensor->get_load();

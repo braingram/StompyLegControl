@@ -1,7 +1,7 @@
 /*
-	leg.h - Library leg class.
-	Created by Brett Graham, June 11, 2017.
-	Released into the public domain -- so help you God.
+  leg.h - Library leg class.
+  Created by Brett Graham, June 11, 2017.
+  Released into the public domain -- so help you God.
 */
 
 #ifndef LEG_H
@@ -24,6 +24,10 @@
 #include "transforms.h"
 #include "valve.h"
 
+
+// if defined, correct length of knee link by subtracting compression
+// of the shock calf (limited from 0 to max)
+#define CALF_COMPRESSION_COMP
 
 /*
  * 1 estop/heartbeat

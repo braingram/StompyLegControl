@@ -25,10 +25,11 @@ Kinematics::Kinematics(LEG_NUMBER leg_number) {
 }
 
 void Kinematics::recompute() {
-    _knee_length_squared = joints[KNEE_INDEX].length * joints[KNEE_INDEX].length;
     _thigh_length_squared = joints[THIGH_INDEX].length * joints[THIGH_INDEX].length;
-    _knee_thigh_min_2 = joints[KNEE_INDEX].length * joints[THIGH_INDEX].length * -2.0;
     _base_beta = PI - joints[THIGH_INDEX].rest_angle + joints[KNEE_INDEX].rest_angle;
+    // TODO adjust knee length by calf load compression
+    _knee_length_squared = joints[KNEE_INDEX].length * joints[KNEE_INDEX].length;
+    _knee_thigh_min_2 = joints[KNEE_INDEX].length * joints[THIGH_INDEX].length * -2.0;
 }
 
 void Kinematics::set_leg_number(LEG_NUMBER leg_number) {
@@ -54,7 +55,9 @@ bool Kinematics::angles_in_limits(float hip, float thigh, float knee) {
   return true;
 }
 
-bool Kinematics::angles_to_xyz(float hip, float thigh, float knee, float* x, float* y, float* z) {
+bool Kinematics::angles_to_xyz(
+    float hip, float thigh, float knee,
+    float* x, float* y, float* z) {
   // range check
   if (!angles_in_limits(hip, thigh, knee)) return false;
   *x = joints[HIP_INDEX].length;
@@ -74,11 +77,44 @@ bool Kinematics::angles_to_xyz(float hip, float thigh, float knee, float* x, flo
   return true;
 };
 
-bool Kinematics::angles_to_xyz(JointAngle3D angles, Point3D* point) {
-  return angles_to_xyz(angles.hip, angles.thigh, angles.knee, &(point->x), &(point->y), &(point->z));
+bool Kinematics::angles_to_xyz(
+    float hip, float thigh, float knee, float calf_compression,
+    float* x, float* y, float* z) {
+  // range check
+  if (!angles_in_limits(hip, thigh, knee)) return false;
+  *x = joints[HIP_INDEX].length;
+  *y = 0;
+  *z = 0;
+
+  float a = joints[THIGH_INDEX].rest_angle - thigh;
+  *x += joints[THIGH_INDEX].length * cosf(a);
+  *z += joints[THIGH_INDEX].length * sinf(a);
+
+  a = joints[KNEE_INDEX].rest_angle - knee - thigh;
+  float kl = joints[KNEE_INDEX].length - calf_compression;
+  *x += kl * cosf(a);
+  *z += kl * sinf(a);
+
+  *y = *x * sinf(hip);
+  *x *= cosf(hip);
+  return true;
 };
 
-bool Kinematics::xyz_to_angles(float x, float y, float z, float* hip, float* thigh, float* knee) {
+bool Kinematics::angles_to_xyz(JointAngle3D angles, Point3D* point) {
+  return angles_to_xyz(
+    angles.hip, angles.thigh, angles.knee,
+    &(point->x), &(point->y), &(point->z));
+};
+
+bool Kinematics::angles_to_xyz(JointAngle3D angles, float calf_compression, Point3D* point) {
+  return angles_to_xyz(
+    angles.hip, angles.thigh, angles.knee, calf_compression,
+    &(point->x), &(point->y), &(point->z));
+};
+
+bool Kinematics::xyz_to_angles(
+    float x, float y, float z,
+    float* hip, float* thigh, float* knee) {
   if (x <= joints[HIP_INDEX].length) return false;
   //float l = sqrtf(x * x + y * y);
   float l = hypotf(x, y);
@@ -89,6 +125,7 @@ bool Kinematics::xyz_to_angles(float x, float y, float z, float* hip, float* thi
   float L = hypotf(z, l - joints[HIP_INDEX].length);
 
   float a1 = acosf(-z / L);
+  // TODO adjust knee length by calf load compression
   float a2 = acosf(
       (_knee_length_squared - _thigh_length_squared - L * L) /
       (-2 * joints[THIGH_INDEX].length * L));
@@ -106,6 +143,46 @@ bool Kinematics::xyz_to_angles(float x, float y, float z, float* hip, float* thi
   return angles_in_limits(*hip, *thigh, *knee);
 };
 
+bool Kinematics::xyz_to_angles(
+    float x, float y, float z, float calf_compression,
+    float* hip, float* thigh, float* knee) {
+  if (x <= joints[HIP_INDEX].length) return false;
+  //float l = sqrtf(x * x + y * y);
+  float l = hypotf(x, y);
+
+  *hip = atan2f(y, x);
+
+  //float L = sqrtf(z * z + (l - HIP_LENGTH) * (l - HIP_LENGTH));
+  float L = hypotf(z, l - joints[HIP_INDEX].length);
+
+  float a1 = acosf(-z / L);
+  // adjust knee length by calf load compression
+  float kl = joints[KNEE_INDEX].length - calf_compression;
+  float a2 = acosf(
+      (kl * kl - _thigh_length_squared - L * L) /
+      (-2 * joints[THIGH_INDEX].length * L));
+
+  float alpha = (a1 + a2);
+
+  float beta = acosf(
+      (L * L - kl * kl - _thigh_length_squared) /
+      (kl * joints[THIGH_INDEX].length * -2.));
+
+  *thigh = joints[THIGH_INDEX].rest_angle - (alpha - PI / 2.);
+  //float base_beta = PI - THIGH_REST_ANGLE + KNEE_REST_ANGLE;
+  *knee = _base_beta - beta;
+  // check ranges, return false if out-of-bounds
+  return angles_in_limits(*hip, *thigh, *knee);
+};
+
 bool Kinematics::xyz_to_angles(Point3D point, JointAngle3D* angles) {
-  return xyz_to_angles(point.x, point.y, point.z, &(angles->hip), &(angles->thigh), &(angles->knee));
+  return xyz_to_angles(
+    point.x, point.y, point.z,
+    &(angles->hip), &(angles->thigh), &(angles->knee));
+};
+
+bool Kinematics::xyz_to_angles(Point3D point, float calf_compression, JointAngle3D* angles) {
+  return xyz_to_angles(
+    point.x, point.y, point.z, calf_compression,
+    &(angles->hip), &(angles->thigh), &(angles->knee));
 };

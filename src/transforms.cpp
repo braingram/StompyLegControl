@@ -378,6 +378,10 @@ float CalfLoadTransform::get_spring_length() {
   return _sl;
 }
 
+float CalfLoadTransform::get_compression() {
+  return _compression;
+}
+
 void CalfLoadTransform::set_a(float a) {
   _a = a;
   _compute_ab();
@@ -408,8 +412,9 @@ float CalfLoadTransform::src_to_dst(float src_value) {
   // linear model for 4 bar linkage
   // upper triangle angle to opposite side
   _sl = sqrtf(_ab2 - _2ab * cosf((src_value * _slope + _offset)));
+  _compression = (_base_length - _sl);
   // convert spring length change to lbs
-  return (_base_length - _sl) * _inches_to_lbs;
+  return _compression * _inches_to_lbs;
 }
 
 float CalfLoadTransform::value_to_load(float value) {
