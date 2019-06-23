@@ -27,7 +27,7 @@
 
 // if defined, correct length of knee link by subtracting compression
 // of the shock calf (limited from 0 to max)
-#define CALF_COMPRESSION_COMP
+//#define CALF_COMPRESSION_COMP
 
 /*
  * 1 estop/heartbeat
