@@ -51,7 +51,7 @@ float fake_rpm = 3000;
 #endif
 
 #define ENABLE_RPM
-#define ENGINE_RPM_PIN 21
+#define ENGINE_RPM_PIN 3
 #define MIN_RPM_DT_US 3000
 // average every N spark times
 //#define RPM_AVG_N 36
@@ -156,7 +156,8 @@ PressureBodySensor::PressureBodySensor(CommandProtocol *cmd, byte index, byte pi
 void PressureBodySensor::report_sensor() {
   //float pressure = analogRead(_pin) - psi_min_ticks;
   //pressure *= psi_per_tick;
-  float pressure = analogRead(_pin) * psi_per_tick - psi_min_ticks;
+  //float pressure = analogRead(_pin) * psi_per_tick - psi_min_ticks;
+  float pressure = (analogRead(_pin) - psi_min_ticks) * psi_per_tick;
   if (pressure < 0) pressure = 0;
   _cmd->start_command(_index);
   _cmd->add_arg(pressure);
@@ -404,8 +405,11 @@ void setup(){
   int psi_max_ticks = ((1 << ADC_RES) - 1);
   //psi_min_ticks = psi_max_ticks * (0.004 / 0.02);
   //psi_per_tick = 3000. / (psi_max_ticks - psi_min_ticks);
-  psi_min_ticks = 3307;  // calibrated 181111
-  psi_per_tick = 0.12261714024131051;
+  //psi_min_ticks = 3307;  // calibrated 181111
+  //psi_min_ticks = 11493;  // calibrated 190623
+  psi_min_ticks = 9954;  // calibrated 190623
+  //psi_per_tick = 0.12261714024131051;
+  psi_per_tick = 0.065;
 
   //pinMode(6, OUTPUT);
   //digitalWrite(6, HIGH);
